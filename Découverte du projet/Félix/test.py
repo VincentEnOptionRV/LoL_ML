@@ -1,1 +1,1 @@
-print ("EU>NA")
+print ("LFL>EU>NA")
