@@ -1,0 +1,28 @@
+Changements 01/11 (Paul)
+
+-> Ajout logs.txt
+
+-> Ajout de features.txt pour dresser une liste de features potentielles (à partir d'exemples 
+trouvés sur le net)
+
+-> Fonctions utiles.ipynb
+- Modif badRequestsHandler. J'ai remis l'ancienne version (sans regarder le temps restant), 
+car a priori l'API ne renvoie pas toujours le bon temps restant et il arrive de refaire une 
+requête alors que l'on est toujours en over quota -> provoquait des erreurs sur les longs appels
+- Modif requestMostRecentGamesId. J'ai ajouté l'argument "type" dans une deuxième fonctionpour
+préciser que l'on veut des rankeds uniquement: (par contre ça ne marche pas pour plus de 100 games)
+- Modif requestRankedInfo: changement pour que la liste soit tout le temps dans l'ordre [SOLOQ,FELXQ]
+(l'API ne renvoie pas toujours le même ordre)
+- Ajout requestInfoGames: renvoie le dictionnaire pour les informations d'une partie
+- Ajout getStatsOnLastGames: renvoie des infos sur les n dernières parties jouées par un joueur
+(KDA, Winrate) attention: allonge les temps d'exécution, beaucoup de requêtes
+
+-> script_dataset.py : script pour la création d'un dataset. On prend size_dataset joueurs d'un 
+certain rang, on récupère leur dernière classée (plus de diversité que si l'on prend toutes les
+games d'un joueur comme Clément). Pour chaque partie, on récupère des features pour les 10 joueurs,
+12 au total (sûrement overkill), ce qui donne 120 features, plus le résultat de la partie stocké 
+dans Y. Les features sont calculées sur les n_stats dernières parties d'un joueur. On a un dataframe
+de taille 121*size_dataset.
+
+-> test.pkl : dataframe pandas résultat du script précédent pour size_dataset=25 et n_stats=10 
+(60 minutes d'exécution, assez long pour seulement 25 parties... En gros size_dataset*n_stats/5)

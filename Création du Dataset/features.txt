@@ -1,0 +1,40 @@
+Idées sur les features du dataset / manière de les obtenir
+
+Données à partir d'une requête sur le joueur (global).
+
+LVL : niveau du joueur ('summonerLevel') / via requestSummonerInfo
+GWR : Winrate global en classé sur la saison / calcul via requestRankedInfo
+TOTAL : Total des parties classées sur la saison / calcul via requestRankedInfo
+VET : Le joueur est-il un vétéran ? (true/false) / via requestRankedInfo
+RANK : Rang en classé (format à définir, probablement convertir sur une échelle en elo) / via requestRankedInfo
+HOT : hotStreak, le joueur est-il en série de victoire ? (oui/non) / via requestRankedInfo
+ROLE : Rôle jouée / via requestInfoGames
+CHAMP : Champion joué / via requestInfoGames
+MAS : Mastery points d'un joueur sur le champions joué / je ne sais pas où le trouver ?
+
+Données à partir de n parties du joueur (nécessite n requêtes) (n=50 par exemple) / via requestInfoGames
+
+KDAG : KDA global sur les n dernières parties (3 features)
+KDA : KDA sur le champion sélectionné dans les n dernière games (3 features)
+WR : Winrate sur le champion sélectionné dans les n dernière games 
+NB : Nombre de parties jouées sur le champion sélectionné dans les n dernière games
+FILL : Le joueur est-il autofill (déterminer le rôle le plus joué sur les n dernières games pour avoir le main rôle)
+GPM : Gold par minutes moyen sur les n dernières games
+DPM : Dégâts par minutes sur les n dernières games
+REC : Nombre de parties jouées récement (sur les X derniers jours)
+
+Données à partir d'un dataset annexe (à fabriquer):
+
+WIN : Winrate global du champion joué en classé
+VS : Winrate global du champion dans le matchup direct de cette partie
+
+-> Les variables importantes seraient a priori (d'après ce que j'ai vu) GWR,WR,NB,MAS,TOTAL
+-> Eléments à considérer: faire attention si le joueur à moins de n games sur le champion, 
+faire attention à normaliser les données (éviter de mélanger winrate en pourcents et nombre 
+de parties jouées en centaines), faire attention au format (mixer données numériques et 
+textuelles (champions, rangs..))
+-> Evaluer l'influence d'une variable sur le résultat d'une partie (Test de corrélation)
+-> Autres features à considérer (peut-être overkill):
+Vision score, Premier sang, dégâts aux objectifs, items, séries de kills, early surrender, bans.
+-> essayer d'aller voir des blogs/papier pour avoir une idée des features intéressantes
+-> Target: potentiellement entre 60 et 75%
