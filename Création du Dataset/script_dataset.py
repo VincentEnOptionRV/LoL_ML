@@ -134,20 +134,20 @@ def getStatsOnLastGames(puuid,n,champion,key):
     games = requestMostRecentGamesIdbis(puuid,key,nb_of_games=n)
     KDAG, KDA, WR, NB, MOST, = [0,0,0],[0,0,0],0,0,[]
     for game in games:
-        data = requestInfoGames(partie,key)
+        data = requestInfoGames(game,key)
         participants = data["info"]["participants"] #info des joueurs
         for i in range(10):
             if participants[i]['puuid']==puuid:
                 KDAG[0] += participants[i]['kills']
-                KDAG[0] += participants[i]['deaths']
-                KDAG[0] += participants[i]['assists']
+                KDAG[1] += participants[i]['deaths']
+                KDAG[2] += participants[i]['assists']
                 MOST.append(participants[i]['teamPosition'])
                 if participants[i]['championName']==champion:
                     NB += 1
                     WR += participants[i]['win']
                     KDA[0] += participants[i]['kills']
-                    KDA[0] += participants[i]['deaths']
-                    KDA[0] += participants[i]['assists']
+                    KDA[1] += participants[i]['deaths']
+                    KDA[2] += participants[i]['assists']
     return [a/n for a in KDAG], [a/n for a in KDA], WR/n, NB, max(set(MOST), key = MOST.count)
 
 
