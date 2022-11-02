@@ -129,7 +129,17 @@ def requestInfoGames(game_id,key):
               'teams': informations globales sur les équipes
     """
     return badRequestsHandler(f"https://europe.api.riotgames.com/lol/match/v5/matches/{game_id}?api_key={key}")
-    
+
+def roleCode(role):
+    if role == "BOTTOM":
+        return "ADC"
+    if role == "UTILITY":
+        return "SUP"
+    if role == "JUNGLE":
+        return "JGL"
+    else:
+        return role[:3]
+
 def getStatsOnLastGames(puuid,n,champion,key):
     games = requestMostRecentGamesIdbis(puuid,key,nb_of_games=n)
     KDAG, KDA, WR, NB, MOST, = [0,0,0],[0,0,0],0,0,[]
@@ -142,7 +152,7 @@ def getStatsOnLastGames(puuid,n,champion,key):
                     KDAG[0] += participants[i]['kills']
                     KDAG[1] += participants[i]['deaths']
                     KDAG[2] += participants[i]['assists']
-                    MOST.append(participants[i]['teamPosition'])
+                    MOST.append(roleCode(participants[i]['teamPosition']))
                     if participants[i]['championName']==champion:
                         NB += 1
                         WR += participants[i]['win']
@@ -154,14 +164,17 @@ def getStatsOnLastGames(puuid,n,champion,key):
     if n == 0:
         n = 1
         MOST = ["MIDDLE"]
-    return [a/n for a in KDAG], [a/n for a in KDA], WR/n, NB, max(set(MOST), key = MOST.count)
-
+    if NB == 0:
+        WR = 0.5
+    else:
+        WR = WR/NB
+    return [a/n for a in KDAG], [a/n for a in KDA], WR, NB, max(set(MOST), key = MOST.count)
 
 #SCRIPT DE CREATION DU DATASET
 
 #Paramètres
 n_stats = 5 #Nombre de parties sur lesquelles on regarde les stats des joueurs
-size_dataset = 50 #Taille du dataset
+size_dataset = 100 #Taille du dataset
 
 #Création d'une liste de parties pour le dataset dans un index
 liste_joueurs = requestPlayersOfARank("RANKED_SOLO_5x5","DIAMOND","II",size_dataset,KEY) #modifier le rank ici
@@ -178,14 +191,14 @@ print(INDEX)
 
 INDEX_copie=copy.deepcopy(INDEX)
 #Création de la strucure du dataset (=features)
-roles = ["TOP","JUNGLE","MIDDLE","BOTTOM","UTILITY"]
+roles = ["TOP","JGL","MID","ADC","SUP"]
 stats = ["CHAMP","LVL","TOTAL","GWR","VET","RANK","HOT","KDAG","KDA","WR","NB","FILL"]
 columns = ["Y"]
 
 for i in range(2):
     for role in roles:
         for stat in stats:
-            columns.append(f"{stat}_{role}_{i}")
+            columns.append(f"{role}{i}_{stat}")
 
 dataset = {}
 for column in columns:
@@ -198,7 +211,7 @@ for partie in INDEX:
         data = requestInfoGames(partie,KEY)
         participants = data["info"]["participants"] #info des joueurs
         for i in range(10): #pour chacun des joueurs (une équipe après l'autre, TOP->JGL->MID->ADC->SUP)
-            ROLE = participants[i]['teamPosition']
+            ROLE = roleCode(participants[i]['teamPosition'])
             CHAMP = participants[i]['championName']
             summoner_name = participants[i]['summonerName']
             summoner_id = participants[i]['summonerId']
@@ -215,7 +228,7 @@ for partie in INDEX:
             FILL = (ROLE!=MOST)
             k=0
             for feature in [CHAMP,LVL,TOTAL,GWR,VET,RANK,HOT,KDAG,KDA,WR,NB,FILL]:
-                dataset[f"{stats[k]}_{ROLE}_{i//5}"].append(feature)
+                dataset[f"{ROLE}{i//5}_{stats[k]}"].append(feature)
                 k += 1 
         Y = data["info"]["teams"][0]["win"]
         dataset["Y"].append(Y)
