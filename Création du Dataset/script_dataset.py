@@ -4,7 +4,7 @@ import json
 import time
 import copy
 
-KEY = ""
+KEY = "RGAPI-52ea7ef7-4e01-4520-8a6c-df536b2ac1d6"
 # Get your key on https://developer.riotgames.com/
 
 def badRequestsHandler(url):
@@ -136,26 +136,32 @@ def getStatsOnLastGames(puuid,n,champion,key):
     for game in games:
         data = requestInfoGames(game,key)
         participants = data["info"]["participants"] #info des joueurs
-        for i in range(10):
-            if participants[i]['puuid']==puuid:
-                KDAG[0] += participants[i]['kills']
-                KDAG[1] += participants[i]['deaths']
-                KDAG[2] += participants[i]['assists']
-                MOST.append(participants[i]['teamPosition'])
-                if participants[i]['championName']==champion:
-                    NB += 1
-                    WR += participants[i]['win']
-                    KDA[0] += participants[i]['kills']
-                    KDA[1] += participants[i]['deaths']
-                    KDA[2] += participants[i]['assists']
+        if len(participants)!=0:
+            for i in range(10):
+                if participants[i]['puuid']==puuid:
+                    KDAG[0] += participants[i]['kills']
+                    KDAG[1] += participants[i]['deaths']
+                    KDAG[2] += participants[i]['assists']
+                    MOST.append(participants[i]['teamPosition'])
+                    if participants[i]['championName']==champion:
+                        NB += 1
+                        WR += participants[i]['win']
+                        KDA[0] += participants[i]['kills']
+                        KDA[1] += participants[i]['deaths']
+                        KDA[2] += participants[i]['assists']
+        else:
+            n -= 1
+    if n == 0:
+        n = 1
+        MOST = ["MIDDLE"]
     return [a/n for a in KDAG], [a/n for a in KDA], WR/n, NB, max(set(MOST), key = MOST.count)
 
 
 #SCRIPT DE CREATION DU DATASET
 
 #Paramètres
-n_stats = 10 #Nombre de parties sur lesquelles on regarde les stats des joueurs
-size_dataset = 25 #Taille du dataset
+n_stats = 5 #Nombre de parties sur lesquelles on regarde les stats des joueurs
+size_dataset = 50 #Taille du dataset
 
 #Création d'une liste de parties pour le dataset dans un index
 liste_joueurs = requestPlayersOfARank("RANKED_SOLO_5x5","DIAMOND","II",size_dataset,KEY) #modifier le rank ici
@@ -210,13 +216,16 @@ for partie in INDEX:
             k=0
             for feature in [CHAMP,LVL,TOTAL,GWR,VET,RANK,HOT,KDAG,KDA,WR,NB,FILL]:
                 dataset[f"{stats[k]}_{ROLE}_{i//5}"].append(feature)
-                k += 1
+                k += 1 
         Y = data["info"]["teams"][0]["win"]
         dataset["Y"].append(Y)
-    except:
+    except Exception as ex:
         INDEX_copie.remove(partie)
         dataset = copy.deepcopy(copie_dataset)
         print(f"Erreur pour la partie {partie}")
+        print(ex)
+    else:
+        print(f"Aucune erreur pour la partie {partie}")
 
 df = pd.DataFrame(data=dataset, index=INDEX_copie)
 df.to_pickle("Création du Dataset/test.pkl") #on sauvegarde le dataset pandas
