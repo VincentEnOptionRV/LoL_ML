@@ -4,7 +4,6 @@ import json
 import time
 import copy
 
-KEY = "RGAPI-52ea7ef7-4e01-4520-8a6c-df536b2ac1d6"
 # Get your key on https://developer.riotgames.com/
 
 def badRequestsHandler(url):
@@ -140,8 +139,12 @@ def roleCode(role):
     else:
         return role[:3]
 
-def getStatsOnLastGames(puuid,n,champion,key):
-    games = requestMostRecentGamesIdbis(puuid,key,nb_of_games=n)
+def getStatsOnLastGames(puuid,n,champion,game_avoid,key):
+    games = requestMostRecentGamesIdbis(puuid,key,nb_of_games=n+1)
+    if game_avoid in games:
+        games.remove(game_avoid)
+    else:
+        games = games[:n]
     KDAG, KDA, WR, NB, MOST, = [0,0,0],[0,0,0],0,0,[]
     for game in games:
         data = requestInfoGames(game,key)
@@ -168,77 +171,4 @@ def getStatsOnLastGames(puuid,n,champion,key):
         WR = 0.5
     else:
         WR = WR/NB
-    return [a/n for a in KDAG], [a/n for a in KDA], WR, NB, max(set(MOST), key = MOST.count)
-
-#SCRIPT DE CREATION DU DATASET
-
-#Paramètres
-n_stats = 5 #Nombre de parties sur lesquelles on regarde les stats des joueurs
-size_dataset = 100 #Taille du dataset
-
-#Création d'une liste de parties pour le dataset dans un index
-liste_joueurs = requestPlayersOfARank("RANKED_SOLO_5x5","DIAMOND","II",size_dataset,KEY) #modifier le rank ici
-INDEX = []
-for joueur in liste_joueurs[:size_dataset]:
-    try:
-        summoners = requestSummonerInfo(joueur["summonerName"],KEY)
-        puuid = summoners["puuid"]
-        partie = requestMostRecentGamesIdbis(puuid,KEY, nb_of_games=1)
-        INDEX.append(partie[0])
-    except:
-        pass
-print(INDEX)
-
-INDEX_copie=copy.deepcopy(INDEX)
-#Création de la strucure du dataset (=features)
-roles = ["TOP","JGL","MID","ADC","SUP"]
-stats = ["CHAMP","LVL","TOTAL","GWR","VET","RANK","HOT","KDAG","KDA","WR","NB","FILL"]
-columns = ["Y"]
-
-for i in range(2):
-    for role in roles:
-        for stat in stats:
-            columns.append(f"{role}{i}_{stat}")
-
-dataset = {}
-for column in columns:
-    dataset[column]=[]
-
-#On récupère les features pour chacune des parties
-for partie in INDEX:
-    copie_dataset = copy.deepcopy(dataset)
-    try: #au cas où un problème survient (tellement de requêtes que ça arrive de temps en temps, il faudrait regarder dans le détail...)
-        data = requestInfoGames(partie,KEY)
-        participants = data["info"]["participants"] #info des joueurs
-        for i in range(10): #pour chacun des joueurs (une équipe après l'autre, TOP->JGL->MID->ADC->SUP)
-            ROLE = roleCode(participants[i]['teamPosition'])
-            CHAMP = participants[i]['championName']
-            summoner_name = participants[i]['summonerName']
-            summoner_id = participants[i]['summonerId']
-            puuid = participants[i]['puuid']
-            summoner_info = requestSummonerInfo(summoner_name,KEY)
-            LVL = summoner_info['summonerLevel']
-            ranked_info = requestRankedInfo(summoner_id,KEY)[0]
-            TOTAL = ranked_info["wins"]+ranked_info["losses"]
-            GWR = ranked_info["wins"]/(TOTAL)
-            VET = ranked_info["veteran"]
-            RANK = [ranked_info['tier'],ranked_info['rank'],ranked_info['leaguePoints']]
-            HOT = ranked_info['hotStreak']
-            KDAG, KDA, WR, NB, MOST = getStatsOnLastGames(puuid,n_stats,CHAMP,KEY)
-            FILL = (ROLE!=MOST)
-            k=0
-            for feature in [CHAMP,LVL,TOTAL,GWR,VET,RANK,HOT,KDAG,KDA,WR,NB,FILL]:
-                dataset[f"{ROLE}{i//5}_{stats[k]}"].append(feature)
-                k += 1 
-        Y = data["info"]["teams"][0]["win"]
-        dataset["Y"].append(Y)
-    except Exception as ex:
-        INDEX_copie.remove(partie)
-        dataset = copy.deepcopy(copie_dataset)
-        print(f"Erreur pour la partie {partie}")
-        print(ex)
-    else:
-        print(f"Aucune erreur pour la partie {partie}")
-
-df = pd.DataFrame(data=dataset, index=INDEX_copie)
-df.to_pickle("Création du Dataset/test.pkl") #on sauvegarde le dataset pandas
+    return [a/n for a in KDAG], [a/(max(1,NB)) for a in KDA], WR, NB, max(set(MOST), key = MOST.count)
