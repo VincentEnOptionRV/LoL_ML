@@ -10,7 +10,7 @@ from utils import requestSummonerInfo,requestMostRecentGamesIdbis,requestPlayers
 #SCRIPT DE CREATION DU DATASET
 
 #Paramètres
-KEY= "RGAPI-8bc5cffe-6a20-486c-92ea-48f60e035495"
+KEY= ""
 n_stats = 5 #Nombre de parties sur lesquelles on regarde les stats des joueurs
 size = 5000 #Taille du dataset
 
