@@ -156,7 +156,7 @@ data.iloc[[0, 1, 2], 0]
 data.loc[0, 'country'] # loc : même fonctionnement que iloc mais avec les labels des colonnes (ici premier élément de la colonne 'country')
 #attention : iloc avec [1:10] donne de 1 à 9 loc de [1:10] donne de 1 à 10
 
-data.set_index("title") # renomme la colonne des index
+data.set_index("title") # renomme la colonne des index ~~ (décale la colonne "title" en index ?)
 
 data.country == 'Italy' # créer une Series avec le résultat du test élément par élément
 data.loc[data.country == 'Italy']
@@ -197,3 +197,25 @@ data.reset_index()        # permet de reset les index, mais garde une partie du 
 data.sort_values(by='len') #sort le tableau par la colonne 'len', on rajoute l'argument ascending=False pour trié par ordre décroissant
 
 data.sort_index()   #trie par index
+
+# Types et changement de valeurs
+
+data.nom_col.dtype # pour récupérer le type de la colonne
+data.dtypes # même chose mais pour toutes les colonnes
+data.nom_col.astype('float64') # pour retyper une colomne
+
+data[pd.isnull(data.nom_col)] # selectionne l'ensemble des lignes pour lesquelles les valeurs de la colomne spécifiée sont nulles
+data.nom_col.fillna("Unknown") # remplace les NA par ce qu'on veut : ici "Unknown"
+data.nom_col.replace("rien", "truc") # remplace les "rien" en "tout"
+
+# Renommage et Combinage
+data.rename(columns={'points': 'score'}) # renomme la colomne "points" en "score"
+data.rename(index={0: 'firstEntry', 1: 'secondEntry'}) # renomme les deux premières entrées des index
+data.rename_axis('wines', axis='rows') # renomme l'axe des index en "wines"
+
+
+pd.concat([dataframe1, dataframe2]) # concatène les deux dataframes s'ils ont les mêmes colomnes
+
+left = dataframe1.set_index(['title', 'trending_date']) # passe ces colonnes en index
+right = dataframe2.set_index(['title', 'trending_date'])
+left.join(right, lsuffix='_CAN', rsuffix='_UK') # permet de concatener horizontalement (si les index correspondent, c'est pour ça qu'on les renomme avant). lsuffix et rsuffix permettent de rajouteur des suffixes aux noms de colomnes des  dataframes de gauche et de droite
