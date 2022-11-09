@@ -97,7 +97,7 @@ def pickle_to_csv(path_pickle,path_csv):
     df = pd.read_pickle(path_pickle)
     df.to_csv(path_csv)
 
-start = 1201 # à modifier: indice de début
-end = 1301 # à modifier: indice de fin (non inclus)
+start = 1401 # à modifier: indice de début
+end = 1501 # à modifier: indice de fin (non inclus)
 main(start,end,n_stats,path=f"Création du Dataset/data/data{start}_{end}.pkl")
 #pickle_to_csv(f"Création du Dataset/data/data{start}_{end}.pkl","Création du Dataset/csv_exemple.csv")
