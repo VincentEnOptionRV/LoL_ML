@@ -5,12 +5,14 @@ import time
 import copy
 import pickle
 
+from os import listdir
+
 from utils import requestSummonerInfo,requestMostRecentGamesIdbis,requestPlayersOfARank,requestRankedInfo,requestInfoGames,roleCode,getStatsOnLastGames
 
 #SCRIPT DE CREATION DU DATASET
 
 #Paramètres
-KEY= "RGAPI-fd2e5e99-ec69-47fb-9b97-bca57780a480"
+KEY= ""
 n_stats = 5 #Nombre de parties sur lesquelles on regarde les stats des joueurs
 size = 5000 #Taille du dataset
 
@@ -95,11 +97,21 @@ def main(start,end,n_stats,path="games.pkl"):
     df = pd.DataFrame(data=dataset, index=INDEX_copie)
     df.to_pickle(path) #on sauvegarde le dataset pandas
 
-def pickle_to_csv(path_pickle,path_csv):
+def pickleToCsv(path_pickle,path_csv):
     df = pd.read_pickle(path_pickle)
     df.to_csv(path_csv)
 
+def picklesToPickle():
+    files = listdir("Création du Dataset/data")
+    dataframes = []
+    for file in files:
+        dataframes.append(pd.read_pickle("Création du Dataset/data/" + file))
+    df = pd.concat(dataframes)
+    df.to_pickle("Création du Dataset/dataset.pkl")
+    df.to_csv("Création du Dataset/dataset.csv")
+
+picklesToPickle()
 start = 3300 # à modifier: indice de début
 end = 3500 # à modifier: indice de fin (non inclus)
-main(start,end,n_stats,path=f"data/data{start}_{end}.pkl")
-#pickle_to_csv(f"Création du Dataset/data/data{start}_{end}.pkl","Création du Dataset/csv_exemple.csv")
+#main(start,end,n_stats,path=f"data/data{start}_{end}.pkl")
+#pickleToCsv(f"Création du Dataset/data/data{start}_{end}.pkl","Création du Dataset/csv_exemple.csv")
