@@ -10,7 +10,7 @@ from utils import requestSummonerInfo,requestMostRecentGamesIdbis,requestPlayers
 #SCRIPT DE CREATION DU DATASET
 
 #Paramètres
-KEY= ""
+KEY= "RGAPI-fd2e5e99-ec69-47fb-9b97-bca57780a480"
 n_stats = 5 #Nombre de parties sur lesquelles on regarde les stats des joueurs
 size = 5000 #Taille du dataset
 
@@ -35,8 +35,8 @@ def createListGames(size_dataset,path="Création du Dataset/listeGames"):
         pickle.dump(INDEX, fp)
     return INDEX
 
-def main(start,end,n_stats,path="Création du Dataset/games.pkl"):
-    with open("Création du Dataset/listeGames", "rb") as fp:
+def main(start,end,n_stats,path="games.pkl"):
+    with open("listeGames", "rb") as fp:
         INDEX = pickle.load(fp)
     INDEX=INDEX[start:end]
     INDEX_copie=copy.deepcopy(INDEX)
@@ -55,6 +55,8 @@ def main(start,end,n_stats,path="Création du Dataset/games.pkl"):
     for column in columns:
         dataset[column]=[]
     #On récupère les features pour chacune des parties
+    compteur = start
+    total = end-1
     for partie in INDEX:
         copie_dataset = copy.deepcopy(dataset)
         try: #au cas où un problème survient (tellement de requêtes que ça arrive de temps en temps, il faudrait regarder dans le détail...)
@@ -85,10 +87,10 @@ def main(start,end,n_stats,path="Création du Dataset/games.pkl"):
         except Exception as ex:
             INDEX_copie.remove(partie)
             dataset = copy.deepcopy(copie_dataset)
-            print(f"Erreur pour la partie {partie}")
-            print(ex)
+            print(f"X ({compteur}/{total}) Erreur pour la partie {partie} :",ex)
         else:
-            print(f"Aucune erreur pour la partie {partie}")
+            print(f"O ({compteur}/{total}) Aucune erreur pour la partie {partie}")
+        compteur+=1
 
     df = pd.DataFrame(data=dataset, index=INDEX_copie)
     df.to_pickle(path) #on sauvegarde le dataset pandas
@@ -97,7 +99,7 @@ def pickle_to_csv(path_pickle,path_csv):
     df = pd.read_pickle(path_pickle)
     df.to_csv(path_csv)
 
-start = 1401 # à modifier: indice de début
-end = 1501 # à modifier: indice de fin (non inclus)
-main(start,end,n_stats,path=f"Création du Dataset/data/data{start}_{end}.pkl")
+start = 3300 # à modifier: indice de début
+end = 3500 # à modifier: indice de fin (non inclus)
+main(start,end,n_stats,path=f"data/data{start}_{end}.pkl")
 #pickle_to_csv(f"Création du Dataset/data/data{start}_{end}.pkl","Création du Dataset/csv_exemple.csv")

@@ -13,7 +13,7 @@ def badRequestsHandler(url):
     """
     r = requests.get(url)
     while r.status_code == 429:
-        time.sleep(5)
+        time.sleep(20)
         r = requests.get(url)
     if r.status_code == 400:
         raise Exception("Requête invalide")
