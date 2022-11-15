@@ -1,11 +1,13 @@
 import pandas as pd
 from sklearn.model_selection import cross_val_score
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.metrics import mean_absolute_error # pour importer la fonction de la MAE
 from sklearn.model_selection import train_test_split
 from sklearn.feature_selection import mutual_info_regression
 
 data = pd.read_pickle("Création du Dataset/dataset.pkl")
+
+#----------------------------------------------
 
 #suppression des KDA car bcp de 0
 roles = ["TOP","JGL","MID","ADC","SUP"]
@@ -15,6 +17,8 @@ for i in [0,1]:
         colomnes.append(f"{role}{i}_KDA")
 # print(colomnes)
 data = data.drop(columns = colomnes)
+
+#----------------------------------------------
 
 # suppression des listes pour le KDAG par transformation en plusieurs colomnes
 colomnes_KDAG=[]
@@ -28,6 +32,8 @@ for colomne in colomnes_KDAG:
     data[f'{nom}KDA_Ratio'] = (data2[f'{nom}K'] + data2[f'{nom}A']) / (data2[f'{nom}D']+1)
     data = data.drop(columns = colomne)
 # print(data)
+
+#----------------------------------------------
 
 #champion par leur ID :
 dict_champ = {}
@@ -75,7 +81,7 @@ for role in roles:
     data[f"{role}_LVL_RATIO"]=data[f"{role}0_LVL"]/data[f"{role}1_LVL"]
 data[f"{role}_LVL_RATIO_MEAN"]=(data["SUP0_LVL"]+data["ADC0_LVL"]+data["MID0_LVL"]+data["JGL0_LVL"]+data["TOP0_LVL"])/(data["SUP1_LVL"]+data["ADC1_LVL"]+data["MID1_LVL"]+data["JGL1_LVL"]+data["TOP1_LVL"])
 
-
+#----------------------------------------------
 def make_mi_scores(X, y):
     X = X.copy()
     for colname in X.select_dtypes(["object", "category"]):
@@ -87,16 +93,43 @@ def make_mi_scores(X, y):
     mi_scores = mi_scores.sort_values(ascending=False)
     return mi_scores
 
-y = data["Y"]
+#----------------------------------------------
+
+# y = data["Y"].astype(int) # pour avoir des 0 et des 1 au lieu de True et False
+# X=data.drop(columns = ["Y"])
+
+
+# scores = []
+# N = 10
+# for i in range(N):
+#     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+#     clf = RandomForestClassifier()
+#     clf.fit(X_train, y_train)
+#     scores.append(clf.score(X_test,y_test))
+
+# print(f"Moyenne des scores sur {N} modèles: {sum(scores)/len(scores)}")
+
+
+#---------------------------------------------- XGBGlassifier
+from xgboost import XGBClassifier
+import numpy as np
+
+def pourcentage_reussite(X,y):
+    Z = np.where(X== y,1,0)
+    return(Z.sum()/(Z.shape[0])*100)
+
+y = data["Y"].astype(int) # pour avoir des 0 et des 1 au lieu de True et False
 X=data.drop(columns = ["Y"])
-
-
 scores = []
 N = 10
 for i in range(N):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-    clf = RandomForestClassifier()
-    clf.fit(X_train, y_train)
-    scores.append(clf.score(X_test,y_test))
+    train_X, val_X, train_y, val_y = train_test_split(X, y, test_size=0.2)
+    modele = XGBClassifier(n_estimators = 200, learning_rate=0.05, n_jobs=6)
+    modele.fit(train_X, train_y, 
+             early_stopping_rounds=5, #si l'erreur se détériore sur 5 cycles on arrête le programme même si < n_estimators
+             eval_set=[(val_X, val_y)], #obligatoire quand early_stopping_rounds utilisé
+             verbose=False)
+    donnees_predites = modele.predict(val_X)
+    scores.append(pourcentage_reussite(donnees_predites,val_y))
 
 print(f"Moyenne des scores sur {N} modèles: {sum(scores)/len(scores)}")
