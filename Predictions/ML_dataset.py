@@ -3,6 +3,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import mean_absolute_error # pour importer la fonction de la MAE
 from sklearn.model_selection import train_test_split
+from sklearn.feature_selection import mutual_info_regression
 
 data = pd.read_pickle("Création du Dataset/dataset.pkl")
 
@@ -69,10 +70,27 @@ for c in data.columns:
     if c[-4:] == "RANK":
         data[c] = data[c].apply(elo)
 
-# print(data)
+
+for role in roles:
+    data[f"{role}_LVL_RATIO"]=data[f"{role}0_LVL"]/data[f"{role}1_LVL"]
+data[f"{role}_LVL_RATIO_MEAN"]=(data["SUP0_LVL"]+data["ADC0_LVL"]+data["MID0_LVL"]+data["JGL0_LVL"]+data["TOP0_LVL"])/(data["SUP1_LVL"]+data["ADC1_LVL"]+data["MID1_LVL"]+data["JGL1_LVL"]+data["TOP1_LVL"])
+
+
+def make_mi_scores(X, y):
+    X = X.copy()
+    for colname in X.select_dtypes(["object", "category"]):
+        X[colname], _ = X[colname].factorize()
+    # All discrete features should now have integer dtypes
+    discrete_features = [pd.api.types.is_integer_dtype(t) for t in X.dtypes]
+    mi_scores = mutual_info_regression(X, y, discrete_features=discrete_features, random_state=0)
+    mi_scores = pd.Series(mi_scores, name="MI Scores", index=X.columns)
+    mi_scores = mi_scores.sort_values(ascending=False)
+    return mi_scores
 
 y = data["Y"]
 X=data.drop(columns = ["Y"])
+
+
 scores = []
 N = 10
 for i in range(N):
