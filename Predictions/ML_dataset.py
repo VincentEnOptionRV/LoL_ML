@@ -97,18 +97,18 @@ def make_mi_scores(X, y):
 
 #---------------------------------------------- RandomForestClassifier
 
-y = data["Y"].astype(int) # pour avoir des 0 et des 1 au lieu de True et False
-X=data.drop(columns = ["Y"])
+# y = data["Y"].astype(int) # pour avoir des 0 et des 1 au lieu de True et False
+# X=data.drop(columns = ["Y"])
 
 
-scores = []
-N = 10
-for i in range(N):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-    clf = RandomForestClassifier(n_estimators=600,n_jobs=6)
-    clf.fit(X_train, y_train)
-    scores.append(clf.score(X_test,y_test))
-print(f"Moyenne des scores sur {N} modèles: {sum(scores)/len(scores)}")
+# scores = []
+# N = 10
+# for i in range(N):
+#     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+#     clf = RandomForestClassifier(n_estimators=600,n_jobs=6)
+#     clf.fit(X_train, y_train)
+#     scores.append(clf.score(X_test,y_test))
+# print(f"Moyenne des scores sur {N} modèles: {sum(scores)/len(scores)}")
 
 #---------------- Tentative de clustering
 # from sklearn.cluster import KMeans
@@ -119,6 +119,14 @@ print(f"Moyenne des scores sur {N} modèles: {sum(scores)/len(scores)}")
 # X["Cluster"] = X["Cluster"].astype("category")
 # sns.relplot(x="TOP0_LVL", y="TOP1_LVL", hue="Cluster", data=X, height=6)
 # plt.show()
+
+# kmeans = KMeans(n_clusters=5)
+# X=data.loc[:, ["TOP0_GWR","TOP1_GWR"]]
+# X["Cluster"] = kmeans.fit_predict(X)
+# X["Cluster"] = X["Cluster"].astype("category")
+# sns.relplot(x="TOP0_GWR", y="TOP1_GWR", hue="Cluster", data=X, height=6)
+# plt.show()
+# print(make_mi_scores(X, y))
 
 #---------------------------------------------- XGBGlassifier
 # from xgboost import XGBClassifier
