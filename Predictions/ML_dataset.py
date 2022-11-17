@@ -93,20 +93,19 @@ def make_mi_scores(X, y):
     mi_scores = mi_scores.sort_values(ascending=False)
     return mi_scores
 
-#----------------------------------------------
+#---------------------------------------------- RandomForestClassifier
 
 # y = data["Y"].astype(int) # pour avoir des 0 et des 1 au lieu de True et False
 # X=data.drop(columns = ["Y"])
 
 
 # scores = []
-# N = 10
+# N = 5
 # for i in range(N):
 #     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-#     clf = RandomForestClassifier()
+#     clf = RandomForestClassifier(n_estimators=600,n_jobs=6)
 #     clf.fit(X_train, y_train)
 #     scores.append(clf.score(X_test,y_test))
-
 # print(f"Moyenne des scores sur {N} modèles: {sum(scores)/len(scores)}")
 
 
@@ -121,15 +120,20 @@ def pourcentage_reussite(X,y):
 y = data["Y"].astype(int) # pour avoir des 0 et des 1 au lieu de True et False
 X=data.drop(columns = ["Y"])
 scores = []
-N = 10
-for i in range(N):
-    train_X, val_X, train_y, val_y = train_test_split(X, y, test_size=0.2)
-    modele = XGBClassifier(n_estimators = 200, learning_rate=0.05, n_jobs=6)
-    modele.fit(train_X, train_y, 
-             early_stopping_rounds=5, #si l'erreur se détériore sur 5 cycles on arrête le programme même si < n_estimators
-             eval_set=[(val_X, val_y)], #obligatoire quand early_stopping_rounds utilisé
-             verbose=False)
-    donnees_predites = modele.predict(val_X)
-    scores.append(pourcentage_reussite(donnees_predites,val_y))
-
-print(f"Moyenne des scores sur {N} modèles: {sum(scores)/len(scores)}")
+N = 7
+max= (0,0,0)
+for number_of_trees in range(100,1100,100):
+    for learning_r in range(1,12):
+        for i in range(N):
+            train_X, val_X, train_y, val_y = train_test_split(X, y, test_size=0.2)
+            modele = XGBClassifier(n_estimators = number_of_trees, learning_rate=learning_r/20, n_jobs=6)
+            modele.fit(train_X, train_y, 
+                    early_stopping_rounds=5, #si l'erreur se détériore sur 5 cycles on arrête le programme même si < n_estimators
+                    eval_set=[(val_X, val_y)], #obligatoire quand early_stopping_rounds utilisé
+                    verbose=False)
+            donnees_predites = modele.predict(val_X)
+            scores.append(pourcentage_reussite(donnees_predites,val_y))
+        moyenne = sum(scores)/len(scores)
+        print(f"Moyenne des scores sur {N} modèles: {moyenne}")
+        if moyenne>max[0]:
+            max=(moyenne,number_of_trees,learning_r/20)
