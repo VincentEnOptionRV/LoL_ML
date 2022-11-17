@@ -172,3 +172,6 @@ def getStatsOnLastGames(puuid,n,champion,game_avoid,key):
     else:
         WR = WR/NB
     return [a/n for a in KDAG], [a/(max(1,NB)) for a in KDA], WR, NB, max(set(MOST), key = MOST.count)
+
+def getMasteries(encryptedSummonerId, championId, key):
+    return badRequestsHandler(f"https://euw1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/{encryptedSummonerId}/by-champion/{championId}?api_key={key}")
