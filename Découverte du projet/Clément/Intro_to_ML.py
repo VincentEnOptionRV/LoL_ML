@@ -171,6 +171,10 @@ data.nom_col.mean()     # fait la moyenne d'une colonne
 data.nom_col.unique()   # pour voir les valeurs uniques (ne pas afficher les doublons)
 data.nom_col.value_counts() # compte et affiche le nb d'apparitions des valeurs
 data.nom_col.map(lambda p: p - moyenne) #map applique à toutes les valeurs de la colonne la lambda fonction, elle retourne une nouvelle Serie
+drop_duplicates # permet de supprimer les doublons des lignes
+pd.get_dummies # pour faire du One Hot Encoding
+data["PorchTypes"] = data[["WoodDeckSF","OpenPorchSF","EnclosedPorch","Threeseasonporch","ScreenPorch"]].gt(0.0).sum(axis=1) # permet de faire la somme de Booléens pour avoir le nombre total de porches différents pour une ligne. .gt permet de faire le test "greater than"
+data["MSClass"]=data.Nom_col.str.split("_",n=1,expand=True)[0] # permet de recréer deux colonnes en splitant au premier "_"
 
 def remean_points(row):
     row.points = row.points - review_points_mean
@@ -188,9 +192,11 @@ n_trop = reviews.description.map(lambda desc: "tropical" in desc).sum() #pour ch
 # Grouping and Sorting
 data.groupby('points').points.count() # group par points et compte les éléments des groupes
 
-data.groupby('winery').apply(lambda df: df.title.iloc[0]) # le apply s'applique sur le novueau dataframe "df" créé (voir le Out [5] : pas comme en SQL, ici créé du mutli index)
+data.groupby('winery').apply(lambda df: df.title.iloc[0]) # le apply s'applique sur le novueau dataframe "df" créé (voir le Out [5] : pas comme en SQL, ici crée du multi index)
 
 data.groupby(['country']).price.agg([len, min, max]) # on groupe par 'country' et on applique les trois fonctions len, min et max sur le group by
+
+data["moyenne par pays"] = data.groupby("Pays").habitants_villes.transform("mean") # fait la moyenne de la colonne habitants_villes et groupe par Pays
 
 data.reset_index()        # permet de reset les index, mais garde une partie du groupby
 
@@ -219,3 +225,34 @@ pd.concat([dataframe1, dataframe2]) # concatène les deux dataframes s'ils ont l
 left = dataframe1.set_index(['title', 'trending_date']) # passe ces colonnes en index
 right = dataframe2.set_index(['title', 'trending_date'])
 left.join(right, lsuffix='_CAN', rsuffix='_UK') # permet de concatener horizontalement (si les index correspondent, c'est pour ça qu'on les renomme avant). lsuffix et rsuffix permettent de rajouteur des suffixes aux noms de colomnes des  dataframes de gauche et de droite
+
+## Feature Engineering
+# Mutual information (MI : mesure des relations, un peu comme une corrélation)
+# le MI est supérieur à 0, échelle log
+# MI ne permet que tester l'intéraction entre une features et le rés voulu, pas entre les features
+# deux algos dans scikit learn : mutual_info_regression (pour les res real-valued) et mutual_info_classif (pour les categorical targets)
+# ATTENTION de bien séparer les discrete features (qui doivent être mis en type int, donc les cateogorical doivent subir un encoder) des autres dans les deux algos
+def make_mi_scores(X, y):
+    X = X.copy()
+    for colname in X.select_dtypes(["object", "category"]):
+        X[colname], _ = X[colname].factorize()
+    # All discrete features should now have integer dtypes
+    discrete_features = [pd.api.types.is_integer_dtype(t) for t in X.dtypes]
+    mi_scores = mutual_info_regression(X, y, discrete_features=discrete_features, random_state=0)
+    mi_scores = pd.Series(mi_scores, name="MI Scores", index=X.columns)
+    mi_scores = mi_scores.sort_values(ascending=False)
+    return mi_scores
+
+## Clustering
+sklearn.cluster.KMeans
+kmeans = KMeans(n_clusters=10, n_init=10, random_state=0)
+X["Cluster"] = kmeans.fit_predict(dataframe)
+#Cluster_Distance Features
+# Create the cluster-distance features using `fit_transform`
+X2 = kmeans.fit_transform(X_scaled)
+#PCA
+from sklearn.decomposition import PCA
+
+## M Estimate Encoders
+from category_encoders import MEstimateEncoder
+encoder = MEstimateEncoder(cols=["Neighborhood"],m=1.0)
