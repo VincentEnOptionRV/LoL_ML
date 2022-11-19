@@ -52,6 +52,9 @@ def requestSummonerInfo(summoner_name,key):
     return badRequestsHandler(f"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summoner_name}?api_key={key}")
 
 def requestMostRecentGamesIdbis(puuid,key, nb_of_games,type_queue='ranked'):
+    """
+    Renvoie les identifiants des nb_of_games dernières parties du joueur dont le puuid est puuid.
+    """
     res_games = []
     r = badRequestsHandler(f"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?start=0&count={nb_of_games}&api_key={key}&type={type_queue}")
     res_games += r
