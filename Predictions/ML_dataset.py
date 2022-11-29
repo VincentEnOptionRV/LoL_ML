@@ -79,10 +79,19 @@ for c in data.columns:
         data[c] = data[c].apply(elo)
 
 
+# Pour l'ensemble des rôles, ajout d'un ratio sur le LVL entre les joueurs de l'équipe 1 et 2 correspondants
 for role in roles:
     data[f"{role}_LVL_RATIO"]=data[f"{role}0_LVL"]/data[f"{role}1_LVL"]
 data["LVL_RATIO_MEAN"]=(data["SUP0_LVL"]+data["ADC0_LVL"]+data["MID0_LVL"]+data["JGL0_LVL"]+data["TOP0_LVL"])/(data["SUP1_LVL"]+data["ADC1_LVL"]+data["MID1_LVL"]+data["JGL1_LVL"]+data["TOP1_LVL"])
 
+# Ajout d'un ratio de win streak : si +4 : 4 joueurs de plus en winstreak dans l'équipe 1 que dans l'équipe 2. Prend des valeurs entre -5 et 5
+data["RATIO_WINSTREAK"]=data["SUP0_HOT"]*1+data["ADC0_HOT"]*1+data["MID0_HOT"]*1+data["JGL0_HOT"]*1+data["TOP0_HOT"]*1-(data["SUP1_HOT"]*1+data["ADC1_HOT"]*1+data["MID1_HOT"]*1+data["JGL1_HOT"]*1+data["TOP1_HOT"]*1)
+
+#graphe rapide pour voir la répartition des victoires pour l'équipe 1 en fonction du ratio de winstreak
+df2 = data.groupby(['RATIO_WINSTREAK','Y'])['Y'].count().reset_index(name="nb_victoires") # on récupère les ratios pour les analyser
+df3 = df2[df2.Y==True]
+plt.bar(df3.RATIO_WINSTREAK,df3.nb_victoires)
+plt.show()
 #---------------------------------------------- MI Scores
 def make_mi_scores(X, y):
     X = X.copy()
@@ -109,6 +118,7 @@ def make_mi_scores(X, y):
 #     clf.fit(X_train, y_train)
 #     scores.append(clf.score(X_test,y_test))
 # print(f"Moyenne des scores sur {N} modèles: {sum(scores)/len(scores)}")
+
 
 #---------------- Tentative de clustering
 # from sklearn.cluster import KMeans
@@ -141,8 +151,8 @@ def make_mi_scores(X, y):
 # scores = []
 # N = 7
 # max= (0,0,0)
-# for number_of_trees in range(100,1100,100):
-#     for learning_r in range(1,12):
+# for number_of_trees in range(100,1100,100): #recherche de la meilleure profondeur
+#     for learning_r in range(1,12): #recherche du meilleur learning rate
 #         for i in range(N):
 #             train_X, val_X, train_y, val_y = train_test_split(X, y, test_size=0.2)
 #             modele = XGBClassifier(n_estimators = number_of_trees, learning_rate=learning_r/20, n_jobs=6)
@@ -153,6 +163,5 @@ def make_mi_scores(X, y):
 #             donnees_predites = modele.predict(val_X)
 #             scores.append(pourcentage_reussite(donnees_predites,val_y))
 #         moyenne = sum(scores)/len(scores)
-#         print(f"Moyenne des scores sur {N} modèles: {moyenne}")
 #         if moyenne>max[0]:
 #             max=(moyenne,number_of_trees,learning_r/20)
