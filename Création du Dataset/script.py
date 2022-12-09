@@ -18,6 +18,13 @@ size = 5000 #Taille du dataset
 
 #Création d'une liste de parties pour le dataset dans un index
 def createListGames(size_dataset,path="Création du Dataset/listeGames"):
+    """_summary_ : Création d'une liste de parties pour le dataset dans un index
+
+    _param_ size_dataset : Taille du dataset
+
+    _return_ : Liste des parties
+
+    """
     liste_joueurs = requestPlayersOfARank("RANKED_SOLO_5x5","PLATINUM","II",size_dataset,KEY) #modifier le rank ici
     INDEX = []
     print(len(liste_joueurs))
@@ -38,6 +45,7 @@ def createListGames(size_dataset,path="Création du Dataset/listeGames"):
     return INDEX
 
 def main(start,end,n_stats,path="games.pkl"):
+    """ Main function to create the dataset"""
     with open("listeGames", "rb") as fp:
         INDEX = pickle.load(fp)
     INDEX=INDEX[start:end]
@@ -98,10 +106,12 @@ def main(start,end,n_stats,path="games.pkl"):
     df.to_pickle(path) #on sauvegarde le dataset pandas
 
 def pickleToCsv(path_pickle,path_csv):
+    """_summary_ : Convertit un fichier pickle en csv"""
     df = pd.read_pickle(path_pickle)
     df.to_csv(path_csv)
 
 def picklesToPickle():
+    """_summary_ : Convertit plusieurs fichiers pickle en un seul"""
     files = listdir("Création du Dataset/data")
     dataframes = []
     for file in files:
