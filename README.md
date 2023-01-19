@@ -20,7 +20,7 @@ L'objectif est de prédire l'équipe gagnante d'une partie à partir de plusieur
 | FILL     | Le joueur joue-t-il sur le même poste que ses 5 dernières parties (autofill)    | API (5 games)  | bool   |
 | VS       | Winrate moyen sur le matchup entre les 2 champions d'un même poste        | mobachampion   | float  |
 | MAS      | Niveau de maîtrise sur le champion joué                                  | API (direct)   | int    |
-| WRCH     | Winrate de la saison sur le champion de la partie                        | scrapping u.gg | float  |
-| WCH      | Victoires de la saison sur le champion de la partie                      | scrapping u.gg | int    |
-| LCH      | Défaites de la saison sur le champion de la partie                       | scrapping u.gg | int    |
-| TOTCH    | Total de parties jouées dans la saison sur le champion de la partie      | scrapping u.gg | int    |
+| WRCH     | Winrate de la saison sur le champion de la partie                        | scraping u.gg | float  |
+| WCH      | Victoires de la saison sur le champion de la partie                      | scraping u.gg | int    |
+| LCH      | Défaites de la saison sur le champion de la partie                       | scraping u.gg | int    |
+| TOTCH    | Total de parties jouées dans la saison sur le champion de la partie      | scraping u.gg | int    |
