@@ -1,6 +1,7 @@
+#Prédiction des rôles d'une équipe à partir d'une liste de champions incomplète
+
 import pandas as pd
 import numpy as np
-import random
 import copy
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
