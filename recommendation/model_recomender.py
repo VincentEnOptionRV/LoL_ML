@@ -72,7 +72,7 @@ def getDataMulti(df):
             for player in range(10):
                 v=[]
                 t = []
-                for p in range(player):
+                for p in range(player+1):
                     p_team = draft[p]//5
                     p_role = draft[p]%5
                     v.append(champions_list.index(line[f"{roles[p_role]}{p_team}_CHAMP"]))
@@ -93,7 +93,7 @@ def generateModels(df):
     X,y = getDataMulti(df)
     for position in range(10):
         print(f"Generation of model {position+1}")
-        model = GradientBoostingClassifier()
+        model = GradientBoostingClassifier(n_estimators = 1000)
         model.fit(np.array(X[position]),y)
         pickle.dump(model, open(f"recommendation/models_winner/model_w{position+1}", 'wb'))
     #to read model: loaded_model = pickle.load(open(filename, 'rb'))
@@ -104,5 +104,5 @@ if __name__ == "__main__":
         model = GradientBoostingClassifier()
         X_train, X_test, y_train, y_test = train_test_split(np.array(X[position]), y, test_size=0.2)
         model.fit(X_train,y_train)
-        print(f"Score for mode {position}: {100*model.score(X_test,y_test)} %")
+        print(f"Score for model {position}: {100*model.score(X_test,y_test)} %")
     generateModels(df)

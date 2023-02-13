@@ -5,6 +5,7 @@ import time
 from bs4 import BeautifulSoup as bs
 import requests
 import re
+from time import time
 
 ch_id = {'aatrox': '266',
  'ahri': '103',
@@ -107,7 +108,7 @@ ch_id = {'aatrox': '266',
  'rammus': '33',
  'reksai': '421',
  'rell': '526',
- 'renata': '888',
+ 'renataglasc': '888',
  'renekton': '58',
  'rengar': '107',
  'riven': '92',
@@ -251,27 +252,24 @@ def getScrapped(summoner):
     return D
 
 def getConstantValues(summoner,KEY):
-    try: #au cas où un problème survient (tellement de requêtes que ça arrive de temps en temps, il faudrait regarder dans le détail...)
-        summoner_info = requestSummonerInfo(summoner,KEY)
-        summoner_id = summoner_info['id']
-        puuid = summoner_info['puuid']
-        LVL = summoner_info['summonerLevel']
-        ranked_info = requestRankedInfo(summoner_id,KEY)[0]
-        TOTAL = ranked_info["wins"]+ranked_info["losses"]
-        GWR = ranked_info["wins"]/(TOTAL)
-        RANK = [ranked_info['tier'],ranked_info['rank'],ranked_info['leaguePoints']]
-        HOT = ranked_info['hotStreak']
-        FILL = False
-    except Exception as ex:
-        print(ex)
-    else:
-        pass
+    summoner_info = requestSummonerInfo(summoner,KEY)
+    summoner_id = summoner_info['id']
+    puuid = summoner_info['puuid']
+    LVL = summoner_info['summonerLevel']
+    ranked_info = requestRankedInfo(summoner_id,KEY)[0]
+    TOTAL = ranked_info["wins"]+ranked_info["losses"]
+    GWR = ranked_info["wins"]/(TOTAL)
+    RANK = [ranked_info['tier'],ranked_info['rank'],ranked_info['leaguePoints']]
+    HOT = ranked_info['hotStreak']
+    FILL = False
     return [LVL,TOTAL,GWR,HOT,False,elo(RANK)], summoner_id
 
 def formate(c):
     c = c.lower()
     if c == 'wukong':
         return 'monkeyking'
+    if c == 'renataglasc':
+        return 'renata'
     return c
     
 def winrate(c1,c2):

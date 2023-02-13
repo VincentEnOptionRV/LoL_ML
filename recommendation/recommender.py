@@ -1,10 +1,12 @@
 import pandas as pd
 import numpy as np
 import pickle
+from time import time
 from utils import getValues
 from role_predictor import getRoles,loadModels
 
 champions = ['Aatrox', 'Ahri', 'Akali', 'Akshan', 'Alistar', 'Amumu', 'Anivia', 'Annie', 'Aphelios', 'Ashe', 'AurelionSol', 'Azir', 'Bard', 'Belveth', 'Blitzcrank', 'Brand', 'Braum', 'Caitlyn', 'Camille', 'Cassiopeia', 'Chogath', 'Corki', 'Darius', 'Diana', 'Draven', 'DrMundo', 'Ekko', 'Elise', 'Evelynn', 'Ezreal', 'FiddleSticks', 'Fiora', 'Fizz', 'Galio', 'Gangplank', 'Garen', 'Gnar', 'Gragas', 'Graves', 'Gwen', 'Hecarim', 'Heimerdinger', 'Illaoi', 'Irelia', 'Ivern', 'Janna', 'JarvanIV', 'Jax', 'Jayce', 'Jhin', 'Jinx', 'Kaisa', 'Kalista', 'Karma', 'Karthus', 'Kassadin', 'Katarina', 'Kayle', 'Kayn', 'Kennen', 'Khazix', 'Kindred', 'Kled', 'KogMaw', 'KSante', 'Leblanc', 'LeeSin', 'Leona', 'Lillia', 'Lissandra', 'Lucian', 'Lulu', 'Lux', 'Malphite', 'Malzahar', 'Maokai', 'MasterYi', 'MissFortune', 'MonkeyKing', 'Mordekaiser', 'Morgana', 'Nami', 'Nasus', 'Nautilus', 'Neeko', 'Nidalee', 'Nilah', 'Nocturne', 'Nunu', 'Olaf', 'Orianna', 'Ornn', 'Pantheon', 'Poppy', 'Pyke', 'Qiyana', 'Quinn', 'Rakan', 'Rammus', 'RekSai', 'Rell', 'Renata', 'Renekton', 'Rengar', 'Riven', 'Rumble', 'Ryze', 'Samira', 'Sejuani', 'Senna', 'Seraphine', 'Sett', 'Shaco', 'Shen', 'Shyvana', 'Singed', 'Sion', 'Sivir', 'Skarner', 'Sona', 'Soraka', 'Swain', 'Sylas', 'Syndra', 'TahmKench', 'Taliyah', 'Talon', 'Taric', 'Teemo', 'Thresh', 'Tristana', 'Trundle', 'Tryndamere', 'TwistedFate', 'Twitch', 'Udyr', 'Urgot', 'Varus', 'Vayne', 'Veigar', 'Velkoz', 'Vex', 'Vi', 'Viego', 'Viktor', 'Vladimir', 'Volibear', 'Warwick', 'Xayah', 'Xerath', 'XinZhao', 'Yasuo', 'Yone', 'Yorick', 'Yuumi', 'Zac', 'Zed', 'Zeri', 'Ziggs', 'Zilean', 'Zoe', 'Zyra']
+champions2 = ['aatrox', 'ahri', 'akali', 'akshan', 'alistar', 'amumu', 'anivia', 'annie', 'aphelios', 'ashe', 'aurelionsol', 'azir', 'bard', 'belveth', 'blitzcrank', 'brand', 'braum', 'caitlyn', 'camille', 'cassiopeia', 'chogath', 'corki', 'darius', 'diana', 'draven', 'drmundo', 'ekko', 'elise', 'evelynn', 'ezreal', 'fiddlesticks', 'fiora', 'fizz', 'galio', 'gangplank', 'garen', 'gnar', 'gragas', 'graves', 'gwen', 'hecarim', 'heimerdinger', 'illaoi', 'irelia', 'ivern', 'janna', 'jarvaniv', 'jax', 'jayce', 'jhin', 'jinx', 'kaisa', 'kalista', 'karma', 'karthus', 'kassadin', 'katarina', 'kayle', 'kayn', 'kennen', 'khazix', 'kindred', 'kled', 'kogmaw', 'ksante', 'leblanc', 'leesin', 'leona', 'lillia', 'lissandra', 'lucian', 'lulu', 'lux', 'malphite', 'malzahar', 'maokai', 'masteryi', 'missfortune', 'wukong', 'mordekaiser', 'morgana', 'nami', 'nasus', 'nautilus', 'neeko', 'nidalee', 'nilah', 'nocturne', 'nunu', 'olaf', 'orianna', 'ornn', 'pantheon', 'poppy', 'pyke', 'qiyana', 'quinn', 'rakan', 'rammus', 'reksai', 'rell', 'renataglasc', 'renekton', 'rengar', 'riven', 'rumble', 'ryze', 'samira', 'sejuani', 'senna', 'seraphine', 'sett', 'shaco', 'shen', 'shyvana', 'singed', 'sion', 'sivir', 'skarner', 'sona', 'soraka', 'swain', 'sylas', 'syndra', 'tahmkench', 'taliyah', 'talon', 'taric', 'teemo', 'thresh', 'tristana', 'trundle', 'tryndamere', 'twistedfate', 'twitch', 'udyr', 'urgot', 'varus', 'vayne', 'veigar', 'velkoz', 'vex', 'vi', 'viego', 'viktor', 'vladimir', 'volibear', 'warwick', 'xayah', 'xerath', 'xinzhao', 'yasuo', 'yone', 'yorick', 'yuumi', 'zac', 'zed', 'zeri', 'ziggs', 'zilean', 'zoe', 'zyra']
 stats = ["LVL","TOTAL","GWR","HOT","FILL","RANK","VS","MAS","WCH","LCH","TOTCH","WRCH"]
 KEY = ""
 
@@ -17,6 +19,7 @@ def getModels():
 models_roles = loadModels()
 
 def predictChampions(bans_input,blue_input,red_input,roles_input,team_input,position_input,pseudo_input,KEY):
+    t0 = time()
     if team_input:
         ally = blue_input
         enemy = red_input
@@ -25,15 +28,28 @@ def predictChampions(bans_input,blue_input,red_input,roles_input,team_input,posi
         ally = red_input
         enemy = blue_input
         pick = [2,3,6,7,10][position_input]
+    #print(f"{pick=}")
+    #print(f"ally team: {ally=}, {[champions[i] for i in ally]}")
+    #print(f"enemy team: {enemy=}, {[champions[i] for i in enemy]}")
     role = roles_input[position_input]
+    #print(f"{role=}")
     enemy_roles = getRoles(enemy,models_roles)
+    t1 = time()
+    if team_input:
+        blue_roles = roles_input
+        red_roles = enemy_roles
+    else:
+        blue_roles = enemy_roles
+        red_roles = roles_input
+    #print(f"{enemy_roles=}")
     if role in enemy_roles:
         ind = enemy_roles.index(role)
         opponent = enemy[ind]
     else:
         opponent = None
-    
+    #print(f"{opponent=}, {champions[opponent]}")
     L,X = getValues(pseudo_input,champions[opponent],KEY)
+    t2 = time()
     full_teams = []
     full_roles = []
     p=0
@@ -43,19 +59,29 @@ def predictChampions(bans_input,blue_input,red_input,roles_input,team_input,posi
         if p in blue_picks:
             ind = blue_picks.index(p)
             full_teams.append(blue_input[ind])
-            full_roles.append(roles_input[p] if team_input else enemy_roles[ind])
+            full_roles.append(blue_roles[ind])
         else: 
             ind = red_picks.index(p)
             full_teams.append(red_input[ind])
-            full_roles.append(roles_input[p] if not team_input else enemy_roles[ind])
+            full_roles.append(red_roles[ind])
         p += 1
+    #print(f"{full_teams=}")
+    #print(f"{full_roles=}")
     for i in range(len(X)):
-        X[i] = full_teams + full_roles + X[i]
-    
+        X[i] = full_teams + [champions2.index(L[i])] + full_roles + [role] + X[i]
+    #print(X[0])
     model = pickle.load(open(f"recommendation/models_winner/model_w{pick}", 'rb'))
     probas = model.predict_proba(X)
+    t3 = time()
+    scores = []
     for i in range(len(L)):
-        print(L[i],probas[i][0] if team_input else probas[i][1])
+        score = 100*probas[i][1] if team_input else 100*probas[i][0]
+        print(L[i],f"{'%.1f' % score} %")
+        scores.append(score)
+    print(f"time to get roles: {t1-t0}")
+    print(f"time to get data: {t2-t1}")
+    print(f"time to predict scores: {t3-t2}")
+    return L,scores, bans_input+[blue_input+red_input]
     #TODO : enlever les bans, les champions ne correspondant pas au bon rôle, vérifier les inputs.
 
 
@@ -66,5 +92,5 @@ if __name__ == "__main__":
     roles_input = [0,2,4,1,3] #roles de l'équipe du joueur
     team_input = True #équipe du joueur (blue=True)
     position_input = 3 #ordre de sélection du joueur de son équipe 0: first pick / 4 last pick
-    pseudo_input = "agurin" #pseudo du joueur
-    print(predictChampions(bans_input,blue_input,red_input,roles_input,team_input,position_input,pseudo_input,KEY))
+    pseudo_input = "snogdal" #pseudo du joueur
+    L,scores,banned=predictChampions(bans_input,blue_input,red_input,roles_input,team_input,position_input,pseudo_input,KEY)
