@@ -1,5 +1,3 @@
-#Prédiction des rôles d'une équipe à partir d'une liste de champions incomplète
-
 import pandas as pd
 import numpy as np
 import copy
@@ -8,13 +6,20 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from tensorflow import keras
 from tensorflow.keras import layers
 
+"""Prédiction des rôles d'une équipe à partir d'une liste de champions incomplète
+Les champions sont encodés par un indice de 0 à 161 correspondant à leur place dans l'ordre alphabétique.
+Les rôles sont encodés par un entier de 0 à 4, TOP -> SUP.
+Exemples dans test.py"""
+
+
+
 #Liste des champions dans l'ordre alphabétique
 champions = ['Aatrox', 'Ahri', 'Akali', 'Akshan', 'Alistar', 'Amumu', 'Anivia', 'Annie', 'Aphelios', 'Ashe', 'AurelionSol', 'Azir', 'Bard', 'Belveth', 'Blitzcrank', 'Brand', 'Braum', 'Caitlyn', 'Camille', 'Cassiopeia', 'Chogath', 'Corki', 'Darius', 'Diana', 'Draven', 'DrMundo', 'Ekko', 'Elise', 'Evelynn', 'Ezreal', 'FiddleSticks', 'Fiora', 'Fizz', 'Galio', 'Gangplank', 'Garen', 'Gnar', 'Gragas', 'Graves', 'Gwen', 'Hecarim', 'Heimerdinger', 'Illaoi', 'Irelia', 'Ivern', 'Janna', 'JarvanIV', 'Jax', 'Jayce', 'Jhin', 'Jinx', 'Kaisa', 'Kalista', 'Karma', 'Karthus', 'Kassadin', 'Katarina', 'Kayle', 'Kayn', 'Kennen', 'Khazix', 'Kindred', 'Kled', 'KogMaw', 'KSante', 'Leblanc', 'LeeSin', 'Leona', 'Lillia', 'Lissandra', 'Lucian', 'Lulu', 'Lux', 'Malphite', 'Malzahar', 'Maokai', 'MasterYi', 'MissFortune', 'MonkeyKing', 'Mordekaiser', 'Morgana', 'Nami', 'Nasus', 'Nautilus', 'Neeko', 'Nidalee', 'Nilah', 'Nocturne', 'Nunu', 'Olaf', 'Orianna', 'Ornn', 'Pantheon', 'Poppy', 'Pyke', 'Qiyana', 'Quinn', 'Rakan', 'Rammus', 'RekSai', 'Rell', 'Renata', 'Renekton', 'Rengar', 'Riven', 'Rumble', 'Ryze', 'Samira', 'Sejuani', 'Senna', 'Seraphine', 'Sett', 'Shaco', 'Shen', 'Shyvana', 'Singed', 'Sion', 'Sivir', 'Skarner', 'Sona', 'Soraka', 'Swain', 'Sylas', 'Syndra', 'TahmKench', 'Taliyah', 'Talon', 'Taric', 'Teemo', 'Thresh', 'Tristana', 'Trundle', 'Tryndamere', 'TwistedFate', 'Twitch', 'Udyr', 'Urgot', 'Varus', 'Vayne', 'Veigar', 'Velkoz', 'Vex', 'Vi', 'Viego', 'Viktor', 'Vladimir', 'Volibear', 'Warwick', 'Xayah', 'Xerath', 'XinZhao', 'Yasuo', 'Yone', 'Yorick', 'Yuumi', 'Zac', 'Zed', 'Zeri', 'Ziggs', 'Zilean', 'Zoe', 'Zyra']
 roles = ["TOP","JGL","MID","ADC","SUP"]
 
 def getData(df):
-    #renvoie des exemples d'équipes incomplètes [[role,champion]]
-    #pour chacune des 5 positions à prédire (first pick, etc...)
+    """renvoie des exemples d'équipes incomplètes [[role,champion]]
+    pour chacune des 5 positions à prédire (first pick, etc...)"""
     D = []
     for position in range(5):
         M = []
@@ -33,6 +38,7 @@ def getData(df):
 
 #ind_train = int(len(M)*4/5)
 def getTrain(D,ind_train):
+    """Change les données dans le bon format pour le réseau"""
     X = []
     Y = []
     for position in range(5):
@@ -53,9 +59,9 @@ def getTrain(D,ind_train):
     return X,Y
 
 def getModels(X,Y):
-    #renvoie une liste de 5 modèles pour chaucune des positions dans la draft (first pick, etc ...)
-    #qui prennent en entrée une équipe incomplète [2,56,31] et renvoie en sortie les probas d'appartenir 
-    #à chaque poste [P(TOP),P(JGL),P(MID),P(ADC),P(SUP)]
+    """renvoie une liste de 5 modèles pour chaucune des positions dans la draft (first pick, etc ...)
+    qui prennent en entrée une équipe incomplète [2,56,31] et renvoie en sortie les probas d'appartenir 
+    à chaque poste [P(TOP),P(JGL),P(MID),P(ADC),P(SUP)]"""
     models_list = []
     for position in range(5):
         X_train = X[position]
@@ -70,13 +76,14 @@ def getModels(X,Y):
         model.compile(optimizer='adam',
                 loss='categorical_crossentropy',
                 metrics=['accuracy'])
-        model.fit(np.array(X_train),np.array(y_train)[:,position,:],epochs=10)
+        model.fit(np.array(X_train),np.array(y_train)[:,position,:],epochs=10,verbose = 0)
         models_list.append(model)
     return models_list
 
 def getRoles(L0,models):
+    """renvoie les rôles supposés à partir d'une équipe partielle de champions
+    getRoles([c1,c2,c3,c4],models)=[r1,r2,r3,r4]"""
     L = copy.copy(L0)
-    #renvoie les rôles supposés à partir d'une équipe incomplète [c1,c2,c3,c4] 
     n = len(L)
     L += (5-n)*[len(champions)]
     p = []
@@ -94,8 +101,8 @@ def getRoles(L0,models):
     return res
 
 def getRolesMulti(L0,models):
+    """renvoie les rôles supposés à partir d'une liste d'équipe incomplète [[9],[3,86,20],[15,36]]"""
     L = copy.copy(L0)
-    #renvoie les rôles supposés à partir d'une liste d'équipe incomplète [[9],[3,86,20],[15,36]] 
     n = len(L[0])
     for l in L:
         l += (5-n)*[len(champions)]
@@ -124,7 +131,7 @@ def toChamp(x):
         return "vide"
 
 def evaluateModels(D,ind_train,models_list):
-    #évalue des modèles entrainés sur D[:ind_train]
+    """évalue la performance globale des modèles entrainés sur D[:ind_train]"""
     count_errors = 0
     scores = []
     totals = []
@@ -142,9 +149,9 @@ def evaluateModels(D,ind_train,models_list):
             for i in range(len(Yp)):
                 if Yp[i]==Y_pred[i]:
                     score += 1
-                elif count_errors<100 and lenV==5:
+                elif count_errors<100 and lenV==5: #Affichage de quelques erreurs
                     count_errors+=1
-                    #print(list(map(toChamp,Xp[i])),list(map(lambda x:roles[x],Yp[i])),list(map(lambda x:roles[x],Y_pred[i])))
+                    print(list(map(toChamp,Xp[i])),list(map(lambda x:roles[x],Yp[i])),list(map(lambda x:roles[x],Y_pred[i])))
                 total += 1
             scores.append(score)
             totals.append(total)

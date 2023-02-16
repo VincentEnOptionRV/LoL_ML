@@ -5,9 +5,12 @@ import time
 from bs4 import BeautifulSoup as bs
 import requests
 import re
+import pickle
 from time import time
 
-ch_id = {'aatrox': '266',
+"""Fonction utilitaires pour les autres fichiers"""
+
+ch_id = {'aatrox': '266', #correspondance champion/ID riot
  'ahri': '103',
  'akali': '84',
  'akshan': '166',
@@ -171,11 +174,11 @@ ch_id = {'aatrox': '266',
  'zyra': '143'}
 
 roles = ["TOP","JGL","MID","ADC","SUP"]
-stats = ["LVL","TOTAL","GWR","HOT","FILL","RANK","VS","MAS","WCH","LCH","TOTCH","WRCH"]
+stats = ["LVL","TOTAL","GWR","HOT","FILL","RANK","VS","MAS","WCH","LCH","TOTCH","WRCH"] #stats utilisées dans le modèle
 
 def badRequestsHandler(url):
     r = requests.get(url)
-    while r.status_code == 429: #éventuellement à revoir
+    while r.status_code == 429: 
         time.sleep(5)
         r = requests.get(url)
     if r.status_code == 400:
@@ -201,6 +204,16 @@ def badRequestsHandler(url):
         raise Exception("Gateway timeout")
     elif r.status_code == 200:
         return r.json()
+
+def roleCode(role):
+    if role == "BOTTOM":
+        return "ADC"
+    if role == "UTILITY":
+        return "SUP"
+    if role == "JUNGLE":
+        return "JGL"
+    else:
+        return role[:3]
 
 def requestSummonerInfo(summoner_name,key):
     return badRequestsHandler(f"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summoner_name}?api_key={key}")
@@ -237,7 +250,47 @@ def elo(L):
 def getMasteries(encryptedSummonerId, championId, key):
     return badRequestsHandler(f"https://euw1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/{encryptedSummonerId}/by-champion/{championId}?api_key={key}")
 
-def getScrapped(summoner):
+def requestInfoGames(game_id,key):
+    return badRequestsHandler(f"https://europe.api.riotgames.com/lol/match/v5/matches/{game_id}?api_key={key}")
+
+def requestMostRecentGamesIdbis(puuid,key, nb_of_games,type_queue='ranked'):
+    res_games = []
+    r = badRequestsHandler(f"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?start=0&count={nb_of_games}&api_key={key}&type={type_queue}")
+    res_games += r
+    return res_games
+
+def createListGames(size_dataset,KEY,tier,division,path="Création du Dataset/listeGames"):
+    liste_joueurs = requestPlayersOfARank("RANKED_SOLO_5x5",division,tier,size_dataset,KEY) #modifier le rank ici
+    INDEX = []
+    z=0
+    for joueur in liste_joueurs[:size_dataset]:
+        z+=1
+        try: 
+            summoners = requestSummonerInfo(joueur["summonerName"],KEY)
+            puuid = summoners["puuid"]
+            partie = requestMostRecentGamesIdbis(puuid,KEY, nb_of_games=1)
+            if partie[0] not in INDEX:
+                INDEX.append(partie[0])
+        except:
+            pass
+    #with open(path, "wb") as fp:   #Pickling
+    #    pickle.dump(INDEX, fp)
+    return INDEX
+
+def requestPlayersOfARank(queue,tier,division,number_of_players,key):
+    tier=tier.upper()
+    if number_of_players > 205 : # les pages renvoyées par chaque requête contiennent 205 joueurs
+        liste_joueurs = []
+        for i in range(1,(number_of_players//205)+2):
+            r = badRequestsHandler(f"https://euw1.api.riotgames.com/lol/league-exp/v4/entries/{queue}/{tier}/{division}?page={i}&api_key={key}")
+            if r == []:
+                return liste_joueurs # on a atteint le nombre de joueur total de la division
+            liste_joueurs += r
+    else :
+        liste_joueurs = badRequestsHandler(f"https://euw1.api.riotgames.com/lol/league-exp/v4/entries/{queue}/{tier}/{division}?page=1&api_key={key}")
+    return liste_joueurs
+
+def getScrapped(summoner): #Renvoie ["champion","WCH","LCH","TOTCH","WRCH"] pour chaque champion joué par un joueur
     url = f"https://u.gg/lol/profile/euw1/{summoner}/champion-stats?season=18&queueType=ranked_solo_5x5"
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
     response = requests.get(url, headers=headers)
@@ -251,7 +304,7 @@ def getScrapped(summoner):
         D.append([c]+[w[1],w[2],w[1]/(w[1]+w[2]),w[1]+w[2]])
     return D
 
-def getConstantValues(summoner,KEY):
+def getConstantValues(summoner,KEY): #Renvoie ["LVL","TOTAL","GWR","HOT","FILL","RANK"], summoner_id pour un joueur
     summoner_info = requestSummonerInfo(summoner,KEY)
     summoner_id = summoner_info['id']
     puuid = summoner_info['puuid']
@@ -264,7 +317,7 @@ def getConstantValues(summoner,KEY):
     FILL = False
     return [LVL,TOTAL,GWR,HOT,False,elo(RANK)], summoner_id
 
-def formate(c):
+def formate(c): #formatage
     c = c.lower()
     if c == 'wukong':
         return 'monkeyking'
@@ -272,23 +325,32 @@ def formate(c):
         return 'renata'
     return c
     
-def winrate(c1,c2):
+def winrate(c1,c2): #winrate du champion c1 contre c2
     url = f"https://www.mobachampion.com/counter/{formate(c1)}-vs-{formate(c2)}/"
     response = requests.get(url)
     soup = bs(response.content, "lxml")
     counters = soup.find_all('div', class_="flex flex-row items-center")
     return float(counters[-2].text.replace("","").replace("%","").replace("\n","").replace(" ", ""))
 
-def getValues(summoner,opponent,KEY):
+def winrateBis(c1,c2): #winrate en passant par la matrice (beauoup plus rapide)
+    X = np.load("Création du Dataset/matchups.npy")
+    if c1 == "KSante" or c2 == "KSante":
+        return 50
+    champs = ['aatrox', 'ahri', 'akali', 'akshan', 'alistar', 'amumu', 'anivia', 'annie', 'aphelios', 'ashe', 'aurelionsol', 'azir', 'bard', 'belveth', 'blitzcrank', 'brand', 'braum', 'caitlyn', 'camille', 'cassiopeia', 'chogath', 'corki', 'darius', 'diana', 'draven', 'drmundo', 'ekko', 'elise', 'evelynn', 'ezreal', 'fiddlesticks', 'fiora', 'fizz', 'galio', 'gangplank', 'garen', 'gnar', 'gragas', 'graves', 'gwen', 'hecarim', 'heimerdinger', 'illaoi', 'irelia', 'ivern', 'janna', 'jarvaniv', 'jax', 'jayce', 'jhin', 'jinx', 'kaisa', 'kalista', 'karma', 'karthus', 'kassadin', 'katarina', 'kayle', 'kayn', 'kennen', 'khazix', 'kindred', 'kled', 'kogmaw', 'leblanc', 'leesin', 'leona', 'lillia', 'lissandra', 'lucian', 'lulu', 'lux', 'malphite', 'malzahar', 'maokai', 'masteryi', 'missfortune', 'wukong', 'mordekaiser', 'morgana', 'nami', 'nasus', 'nautilus', 'neeko', 'nidalee', 'nilah', 'nocturne', 'nunu', 'olaf', 'orianna', 'ornn', 'pantheon', 'poppy', 'pyke', 'qiyana', 'quinn', 'rakan', 'rammus', 'reksai', 'rell', 'renataglasc', 'renekton', 'rengar', 'riven', 'rumble', 'ryze', 'samira', 'sejuani', 'senna', 'seraphine', 'sett', 'shaco', 'shen', 'shyvana', 'singed', 'sion', 'sivir', 'skarner', 'sona', 'soraka', 'swain', 'sylas', 'syndra', 'tahmkench', 'taliyah', 'talon', 'taric', 'teemo', 'thresh', 'tristana', 'trundle', 'tryndamere', 'twistedfate', 'twitch', 'udyr', 'urgot', 'varus', 'vayne', 'veigar', 'velkoz', 'vex', 'vi', 'viego', 'viktor', 'vladimir', 'volibear', 'warwick', 'xayah', 'xerath', 'xinzhao', 'yasuo', 'yone', 'yorick', 'yuumi', 'zac', 'zed', 'zeri', 'ziggs', 'zilean', 'zoe', 'zyra']
+    i = champs.index(c1.lower())
+    j = champs.index(c2.lower())
+    return X[i][j]
+
+def getValues(summoner,opponent,KEY): #Calcul de MAS et concaténation de toutes les autres variables
     M = getScrapped(summoner)
     X = []
     L = []
     const, summoner_id = getConstantValues(summoner,KEY)
     for i in range(len(M)):
-        X.append(const + [0.5 if opponent is None or opponent.lower()==M[i][0].lower() else winrate(M[i][0],opponent)] + [getMasteries(summoner_id,int(ch_id[M[i][0]]),KEY)['championPoints']] + M[i][1:])
+        X.append(const + [0.5 if opponent is None or opponent.lower()==M[i][0].lower() else winrateBis(M[i][0],opponent)] + [getMasteries(summoner_id,int(ch_id[M[i][0]]),KEY)['championPoints']] + M[i][1:])
         L.append(M[i][0])
     return L,X
 
 if __name__ == "__main__":
-    L,X = getValues("agurin","warwick","RGAPI-f4ac39da-ec2d-4c99-a2c1-83e54ada1a41")
+    L,X = getValues("agurin","warwick","")
     print(X)
