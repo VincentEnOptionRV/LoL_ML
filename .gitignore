@@ -1,5 +1,7 @@
-# Created by https://www.toptal.com/developers/gitignore/api/jupyternotebooks,python
-# Edit at https://www.toptal.com/developers/gitignore?templates=jupyternotebooks,python
+### Dossiers ###
+Traitements_images/dataset/
+Traitements_images/images_draft/
+Traitements_images/snapshots/
 
 ### Mac OS X ###
 .DS_Store
