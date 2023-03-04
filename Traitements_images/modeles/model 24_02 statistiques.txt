@@ -1,0 +1,10 @@
+model 24_02 :
+picks :
+top 1 12/26 moyenne : 46.15%
+top 5 13/26 moyenne : 50.00%
+
+bans :
+top 1 15/29 moyenne : 51,72%
+top 5 21/29 moyenne : 72,41%
+
+Sur trois images
