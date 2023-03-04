@@ -7,7 +7,7 @@ from main import predictChampions,topChamp,orderChamps
 from utils import createListGames,requestInfoGames,roleCode,getValues
 from roles import loadModels,getRoles,getRolesMulti
 
-KEY = "RGAPI-610e324e-a33f-48d2-a3ee-374c41b4c11e"
+KEY = ""
 
 #Fichier de test des fonctions de prédiction des rôles d'une liste de champions incomplète
 

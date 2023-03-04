@@ -298,7 +298,7 @@ def getScrapped(summoner): #Renvoie ["champion","WCH","LCH","TOTCH","WRCH"] pour
     rates = soup.find_all('div', class_="champion-rates")
     names = soup.find_all('span', class_="champion-name")
     D = []
-    for i in range(min(5,len(rates))):
+    for i in range(min(15,len(rates))):
         c = re.sub(r'[^a-zA-Z]','',names[i].text.lower())
         w = list(map(int,re.findall(r'\d+', rates[i].text)))
         D.append([c]+[w[1],w[2],w[1]/(w[1]+w[2]),w[1]+w[2]])
@@ -309,7 +309,7 @@ def getScrapped(summoner): #Renvoie ["champion","WCH","LCH","TOTCH","WRCH"] pour
         rates = soup.find_all('div', class_="champion-rates")
         names = soup.find_all('span', class_="champion-name")
         D = []
-        for i in range(min(5,len(rates))):
+        for i in range(min(15,len(rates))):
             c = re.sub(r'[^a-zA-Z]','',names[i].text.lower())
             w = list(map(int,re.findall(r'\d+', rates[i].text)))
             D.append([c]+[w[1],w[2],w[1]/(w[1]+w[2]),w[1]+w[2]])        
