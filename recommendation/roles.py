@@ -185,5 +185,5 @@ if __name__ == "__main__":
     X,y = getTrain(D,ind_train=ind)
     models = getModels(X,y)
     evaluateModels(D,ind_train=ind,models_list=models)
-    createModels()
+    #createModels()
     

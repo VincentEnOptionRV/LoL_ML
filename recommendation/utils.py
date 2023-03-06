@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup as bs
 import requests
 import re
 import pickle
-from time import time
+from time import time,sleep
 
 """Fonction utilitaires pour les autres fichiers"""
 
@@ -98,7 +98,7 @@ ch_id = {'aatrox': '266', #correspondance champion/ID riot
  'nidalee': '76',
  'nilah': '895',
  'nocturne': '56',
- 'nunu': '20',
+ 'nunuwillump': '20',
  'olaf': '2',
  'orianna': '61',
  'ornn': '516',
@@ -179,7 +179,7 @@ stats = ["LVL","TOTAL","GWR","HOT","FILL","RANK","VS","MAS","WCH","LCH","TOTCH",
 def badRequestsHandler(url):
     r = requests.get(url)
     while r.status_code == 429: 
-        time.sleep(5)
+        sleep(5)
         r = requests.get(url)
     if r.status_code == 400:
         print(r.text)
@@ -298,10 +298,21 @@ def getScrapped(summoner): #Renvoie ["champion","WCH","LCH","TOTCH","WRCH"] pour
     rates = soup.find_all('div', class_="champion-rates")
     names = soup.find_all('span', class_="champion-name")
     D = []
-    for i in range(len(rates)):
+    for i in range(min(15,len(rates))):
         c = re.sub(r'[^a-zA-Z]','',names[i].text.lower())
         w = list(map(int,re.findall(r'\d+', rates[i].text)))
         D.append([c]+[w[1],w[2],w[1]/(w[1]+w[2]),w[1]+w[2]])
+    if len(rates)<3:
+        url = f"https://u.gg/lol/profile/euw1/{summoner}/champion-stats"
+        response = requests.get(url, headers=headers)
+        soup = bs(response.content, "lxml")
+        rates = soup.find_all('div', class_="champion-rates")
+        names = soup.find_all('span', class_="champion-name")
+        D = []
+        for i in range(min(15,len(rates))):
+            c = re.sub(r'[^a-zA-Z]','',names[i].text.lower())
+            w = list(map(int,re.findall(r'\d+', rates[i].text)))
+            D.append([c]+[w[1],w[2],w[1]/(w[1]+w[2]),w[1]+w[2]])        
     return D
 
 def getConstantValues(summoner,KEY): #Renvoie ["LVL","TOTAL","GWR","HOT","FILL","RANK"], summoner_id pour un joueur
@@ -309,11 +320,18 @@ def getConstantValues(summoner,KEY): #Renvoie ["LVL","TOTAL","GWR","HOT","FILL",
     summoner_id = summoner_info['id']
     puuid = summoner_info['puuid']
     LVL = summoner_info['summonerLevel']
-    ranked_info = requestRankedInfo(summoner_id,KEY)[0]
-    TOTAL = ranked_info["wins"]+ranked_info["losses"]
-    GWR = ranked_info["wins"]/(TOTAL)
-    RANK = [ranked_info['tier'],ranked_info['rank'],ranked_info['leaguePoints']]
-    HOT = ranked_info['hotStreak']
+    req = requestRankedInfo(summoner_id,KEY)
+    if req != []:
+        ranked_info = req[0]
+        TOTAL = ranked_info["wins"]+ranked_info["losses"]
+        GWR = ranked_info["wins"]/(TOTAL)
+        RANK = [ranked_info['tier'],ranked_info['rank'],ranked_info['leaguePoints']]
+        HOT = ranked_info['hotStreak']
+    else:
+        TOTAL = 0
+        GWR = 0
+        RANK = ["BRONZE","I",0]
+        HOT = False
     FILL = False
     return [LVL,TOTAL,GWR,HOT,False,elo(RANK)], summoner_id
 
@@ -334,9 +352,9 @@ def winrate(c1,c2): #winrate du champion c1 contre c2
 
 def winrateBis(c1,c2): #winrate en passant par la matrice (beauoup plus rapide)
     X = np.load("Création du Dataset/matchups.npy")
-    if c1 == "KSante" or c2 == "KSante":
+    if c1 == "KSante" or c2 == "KSante" or c1 == "ksante" or c2 == "ksante":
         return 50
-    champs = ['aatrox', 'ahri', 'akali', 'akshan', 'alistar', 'amumu', 'anivia', 'annie', 'aphelios', 'ashe', 'aurelionsol', 'azir', 'bard', 'belveth', 'blitzcrank', 'brand', 'braum', 'caitlyn', 'camille', 'cassiopeia', 'chogath', 'corki', 'darius', 'diana', 'draven', 'drmundo', 'ekko', 'elise', 'evelynn', 'ezreal', 'fiddlesticks', 'fiora', 'fizz', 'galio', 'gangplank', 'garen', 'gnar', 'gragas', 'graves', 'gwen', 'hecarim', 'heimerdinger', 'illaoi', 'irelia', 'ivern', 'janna', 'jarvaniv', 'jax', 'jayce', 'jhin', 'jinx', 'kaisa', 'kalista', 'karma', 'karthus', 'kassadin', 'katarina', 'kayle', 'kayn', 'kennen', 'khazix', 'kindred', 'kled', 'kogmaw', 'leblanc', 'leesin', 'leona', 'lillia', 'lissandra', 'lucian', 'lulu', 'lux', 'malphite', 'malzahar', 'maokai', 'masteryi', 'missfortune', 'wukong', 'mordekaiser', 'morgana', 'nami', 'nasus', 'nautilus', 'neeko', 'nidalee', 'nilah', 'nocturne', 'nunu', 'olaf', 'orianna', 'ornn', 'pantheon', 'poppy', 'pyke', 'qiyana', 'quinn', 'rakan', 'rammus', 'reksai', 'rell', 'renataglasc', 'renekton', 'rengar', 'riven', 'rumble', 'ryze', 'samira', 'sejuani', 'senna', 'seraphine', 'sett', 'shaco', 'shen', 'shyvana', 'singed', 'sion', 'sivir', 'skarner', 'sona', 'soraka', 'swain', 'sylas', 'syndra', 'tahmkench', 'taliyah', 'talon', 'taric', 'teemo', 'thresh', 'tristana', 'trundle', 'tryndamere', 'twistedfate', 'twitch', 'udyr', 'urgot', 'varus', 'vayne', 'veigar', 'velkoz', 'vex', 'vi', 'viego', 'viktor', 'vladimir', 'volibear', 'warwick', 'xayah', 'xerath', 'xinzhao', 'yasuo', 'yone', 'yorick', 'yuumi', 'zac', 'zed', 'zeri', 'ziggs', 'zilean', 'zoe', 'zyra']
+    champs = ['aatrox', 'ahri', 'akali', 'akshan', 'alistar', 'amumu', 'anivia', 'annie', 'aphelios', 'ashe', 'aurelionsol', 'azir', 'bard', 'belveth', 'blitzcrank', 'brand', 'braum', 'caitlyn', 'camille', 'cassiopeia', 'chogath', 'corki', 'darius', 'diana', 'draven', 'drmundo', 'ekko', 'elise', 'evelynn', 'ezreal', 'fiddlesticks', 'fiora', 'fizz', 'galio', 'gangplank', 'garen', 'gnar', 'gragas', 'graves', 'gwen', 'hecarim', 'heimerdinger', 'illaoi', 'irelia', 'ivern', 'janna', 'jarvaniv', 'jax', 'jayce', 'jhin', 'jinx', 'kaisa', 'kalista', 'karma', 'karthus', 'kassadin', 'katarina', 'kayle', 'kayn', 'kennen', 'khazix', 'kindred', 'kled', 'kogmaw', 'leblanc', 'leesin', 'leona', 'lillia', 'lissandra', 'lucian', 'lulu', 'lux', 'malphite', 'malzahar', 'maokai', 'masteryi', 'missfortune', 'wukong', 'mordekaiser', 'morgana', 'nami', 'nasus', 'nautilus', 'neeko', 'nidalee', 'nilah', 'nocturne', 'nunuwillump', 'olaf', 'orianna', 'ornn', 'pantheon', 'poppy', 'pyke', 'qiyana', 'quinn', 'rakan', 'rammus', 'reksai', 'rell', 'renataglasc', 'renekton', 'rengar', 'riven', 'rumble', 'ryze', 'samira', 'sejuani', 'senna', 'seraphine', 'sett', 'shaco', 'shen', 'shyvana', 'singed', 'sion', 'sivir', 'skarner', 'sona', 'soraka', 'swain', 'sylas', 'syndra', 'tahmkench', 'taliyah', 'talon', 'taric', 'teemo', 'thresh', 'tristana', 'trundle', 'tryndamere', 'twistedfate', 'twitch', 'udyr', 'urgot', 'varus', 'vayne', 'veigar', 'velkoz', 'vex', 'vi', 'viego', 'viktor', 'vladimir', 'volibear', 'warwick', 'xayah', 'xerath', 'xinzhao', 'yasuo', 'yone', 'yorick', 'yuumi', 'zac', 'zed', 'zeri', 'ziggs', 'zilean', 'zoe', 'zyra']
     i = champs.index(c1.lower())
     j = champs.index(c2.lower())
     return X[i][j]
@@ -352,5 +370,5 @@ def getValues(summoner,opponent,KEY): #Calcul de MAS et concaténation de toutes
     return L,X
 
 if __name__ == "__main__":
-    L,X = getValues("agurin","warwick","")
+    L,X = getValues("nerfedb","warwick","")
     print(X)
