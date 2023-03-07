@@ -133,15 +133,53 @@ def generateGame(tier="I",rank="GOLD"): #TODO
 #         with open(f"validation{rank}.pkl", "wb") as fp:
 #             pickle.dump(scores, fp)
 
+def validation(N=10000):
+    vals=[np.arange(0,600,25),np.arange(0,800,25),np.arange(0.45,0.55,0.01),[True,False],[True,False],np.arange(1400,1900,50),np.arange(-10,10,2),np.arange(0,100000,5000),np.arange(0,50,2),np.arange(0,50,2),np.arange(0.45,0.55,0.01),np.arange(0,100,5)]
+    scores = [[[] for m in range(len(vals[k]))] for k in range(12)]
+    for i in range(len(vals)):
+        for j in range(len(vals[i])):
+            print(f"Step {i} {j}")
+            for mod in range(10):
+                team = ((mod)//2+(mod)%2)%2
+                X=[]
+                for z in range(N):
+                    full_roles = []
+                    blue_roles = np.arange(5)
+                    red_roles = np.arange(5)
+                    np.random.shuffle(blue_roles)
+                    np.random.shuffle(red_roles)
+                    picks = [0,5,6,1,2,7,8,3,4,9]
+                    for t in range(10):
+                        player = picks[t]
+                        if player<5:
+                            full_roles.append(blue_roles[player%5])
+                        else:
+                            full_roles.append(red_roles[player%5])
+                    Xi = list(np.random.choice(np.arange(162),mod+1))+full_roles[:mod+1]
+                    for v in range(len(vals)):
+                        if i==v:
+                            Xi.append(vals[i][j])
+                        else:
+                            Xi.append(np.random.choice(vals[v]))
+                    X.append(Xi)
+                model = pickle.load(open(f"recommendation/models_winner/model_w{mod+1}", 'rb'))
+                probas = model.predict_proba(X)
+                scores[i][j] += list(map(lambda x:100*x[0] if team else 100*x[1],probas))
+    with open(f"recommendation/validation.pkl", "wb") as fp:
+        pickle.dump(scores, fp)
+
+
+                    
 
 
 if __name__ == "__main__":
-    # validation()
+    validation()
     # testRoles()
-    generateGame('IV','BRONZE')
+    # generateGame('IV','BRONZE')
     # for rank in ['BRONZE','SILVER','GOLD','PLATINUM','DIAMOND']:
     #     for tier in ['IV','III','II','I']:
     #         try:
     #             generateGame(tier,rank)
     #         except Exception as ex:
     #             print(ex)
+    pass
