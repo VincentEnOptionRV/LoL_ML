@@ -63,7 +63,7 @@ def predictChampions(bans_input,blue_input,red_input,roles_input,team_input,posi
     #print(f"enemy team: {enemy=}, {[champions[i] for i in enemy]}")
     role = roles_input[position_input]
     #print(f"{role=}")
-    enemy_roles = getRoles(enemy,models_roles)
+    enemy_roles = [0,1,2,3,4][:len(enemy)]
     t1 = time()
     if team_input:
         blue_roles = roles_input
