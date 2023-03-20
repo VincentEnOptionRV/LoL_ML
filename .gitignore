@@ -2,7 +2,7 @@
 Traitements_images/dataset/
 Traitements_images/images_draft/
 Traitements_images/snapshots/
-
+recommendation/validation.pkl
 ### Mac OS X ###
 .DS_Store
 
