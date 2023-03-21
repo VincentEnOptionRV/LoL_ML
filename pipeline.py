@@ -19,8 +19,8 @@ def pipeline(pseudo,side,pos,role,KEY):
     draft_order =  blue_picks[pos] if side else red_picks[pos]
     role_id = roles_labels.index(role)
     bans = res['bans1'] + res['bans2']
-    blue = res['champs1'] if side else ['champs2']
-    red = res['champs2'] if side else ['champs1']
+    blue = res['champs1'] if side else res['champs2']
+    red = res['champs2'] if side else res['champs1']
     blue_locks = []
     red_locks = []
     for i in range(5):
