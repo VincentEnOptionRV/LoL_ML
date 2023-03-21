@@ -133,25 +133,31 @@ def predictions(liste_image,nom_model, print_off = False, resnet = False):
     # get the predictions for the test data
     predictions = model.predict(image_to_pred)
 
-    # get the predicted class as the index of the highest probability
-    predicted_classes = np.argmax(predictions, axis=1)
-
-    # get the three index of highest probability
+    # get the five index of highest probability
     top_5 = np.argsort(predictions, axis=1)[:,-5:]
 
+
+    # Liste des champions dont les labels sont inversés 
+    K = ['Kaisa', 'Kalista', 'Karma', 'Karthus', 'Kassadin', 'Katarina', 'Kayle', 'Kayn', 'Kennen', 'Khazix', 'Kindred', 'Kled', 'KogMaw', 'KSante']
+    
     champions = ['Aatrox', 'Ahri', 'Akali', 'Akshan', 'Alistar', 'Amumu', 'Anivia', 'Annie', 'Aphelios', 'Ashe', 'AurelionSol', 'Azir', 'Bard', 'Belveth', 'Blitzcrank', 'Brand', 'Braum', 'Caitlyn', 'Camille', 'Cassiopeia', 'Chogath', 'Corki', 'Darius', 'Diana', 'Draven', 'DrMundo', 'Ekko', 'Elise', 'Evelynn', 'Ezreal', 'FiddleSticks', 'Fiora', 'Fizz', 'Galio', 'Gangplank', 'Garen', 'Gnar', 'Gragas', 'Graves', 'Gwen', 'Hecarim', 'Heimerdinger', 'Illaoi', 'Irelia', 'Ivern', 'Janna', 'JarvanIV', 'Jax', 'Jayce', 'Jhin', 'Jinx', 'Kaisa', 'Kalista', 'Karma', 'Karthus', 'Kassadin', 'Katarina', 'Kayle', 'Kayn', 'Kennen', 'Khazix', 'Kindred', 'Kled', 'KogMaw', 'KSante', 'Leblanc', 'LeeSin', 'Leona', 'Lillia', 'Lissandra', 'Lucian', 'Lulu', 'Lux', 'Malphite', 'Malzahar', 'Maokai', 'MasterYi', 'MissFortune', 'MonkeyKing', 'Mordekaiser', 'Morgana', 'Nami', 'Nasus', 'Nautilus', 'Neeko', 'Nidalee', 'Nilah', 'Nocturne', 'Nunu', 'Olaf', 'Orianna', 'Ornn', 'Pantheon', 'Poppy', 'Pyke', 'Qiyana', 'Quinn', 'Rakan', 'Rammus', 'RekSai', 'Rell', 'Renata', 'Renekton', 'Rengar', 'Riven', 'Rumble', 'Ryze', 'Samira', 'Sejuani', 'Senna', 'Seraphine', 'Sett', 'Shaco', 'Shen', 'Shyvana', 'Singed', 'Sion', 'Sivir', 'Skarner', 'Sona', 'Soraka', 'Swain', 'Sylas', 'Syndra', 'TahmKench', 'Taliyah', 'Talon', 'Taric', 'Teemo', 'Thresh', 'Tristana', 'Trundle', 'Tryndamere', 'TwistedFate', 'Twitch', 'Udyr', 'Urgot', 'Varus', 'Vayne', 'Veigar', 'Velkoz', 'Vex', 'Vi', 'Viego', 'Viktor', 'Vladimir', 'Volibear', 'Warwick', 'Xayah', 'Xerath', 'XinZhao', 'Yasuo', 'Yone', 'Yorick', 'Yuumi', 'Zac', 'Zed', 'Zeri', 'Ziggs', 'Zilean', 'Zoe', 'Zyra']
 
     if print_off == False :
         print(" 5 + grandes probas pour chaque prédiction :")
-        for i in range(len(top_5)):
-            # inverse la liste pour avoir les plus grandes probas en premier
-            liste_top_5 = top_5[i][::-1]
-            print([champions[j] for j in liste_top_5])
-
-
-
-    for i in range(len(predicted_classes)):
-        predictions_finales.append(champions[predicted_classes[i]])
+    for i in range(len(top_5)):
+        # inverse la liste pour avoir les plus grandes probas en premier
+        liste_top_5 = top_5[i][::-1]
+        res_5 = [champions[j] for j in liste_top_5]
+        for j in range(len(res_5)): # On gère les problèmes de Draven/DrMundo ainsi que des champions commençant par K
+            if res_5[j]=="Draven":
+                res_5[j] = "DrMundo"
+            elif res_5[j]=="DrMundo":
+                res_5[j] = "Draven"
+            if res_5[j] in K:
+                res_5[j] = K[K.index(res_5[j])-1]
+        if print_off == False :
+            print(res_5)
+        predictions_finales.append(res_5[0])
 
     return(predictions_finales)
 
