@@ -1,9 +1,9 @@
 model 24_02 :
-picks :
+Prédictions des "picks" :
 top 1 12/26 moyenne : 46.15%
 top 5 19/26 moyenne : 73.08%
 
-bans :
+Prédictions des bannissements :
 top 1 15/29 moyenne : 51,72%
 top 5 21/29	 moyenne : 72,41%
 
