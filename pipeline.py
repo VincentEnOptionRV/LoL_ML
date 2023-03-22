@@ -33,13 +33,15 @@ def pipeline(pseudo,side,pos,role,KEY):
     roles[role_id] = pos
     L,scores,banned=predictChampions(bans,blue_locks,red_locks,roles,side,pos,pseudo,KEY,verbose=False)
     X = orderChamps(L,scores,banned,role_id)
-    return X[-1][1]
+    X.reverse()
+    return X
 
 if __name__ == "__main__":
-    pseudo = "agurin"
+    pseudo = "Arkyce"
     pos = 4
-    side = True #blue_side
-    role = "JGL"
-    KEY = "RGAPI-bb1e3828-b34b-4d61-b17d-d8510e226cb5"
-    r = champions_labels[pipeline(pseudo,side,pos,role,KEY)]
-    print(r)
+    side = False #blue_side
+    role = "SUP"
+    KEY = "RGAPI-b68df1a9-ab31-4bcf-98e1-f5f435ed5037"
+    recommandation = pipeline(pseudo,side,pos,role,KEY)
+    for val,champ in recommandation:
+        print(f"{champions_labels[champ]} : {val:.2f}")
