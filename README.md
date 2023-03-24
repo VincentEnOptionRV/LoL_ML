@@ -1,7 +1,19 @@
 # LoL_ML
 Ici sont déposés nos codes et nos recherches pour le projet Gaming de l'option IA de Centrale Nantes de 2022-2023.
 
-L'objectif était premièrement de prédire l'équipe gagnante d'une partie à partir de plusieurs features listées ci-dessous (dupliquées pour chacun des 10 participants de la partie) :
+L'objectif final de ce projet est la création d'un outil de recommandation de champions sur League of Legends utilisable au début des parties par un joueur.
+
+Les réalisations sont les suivantes : 
+Partie 1 :
+  - Création d'un dataset à partir de récolte de données par API et par web-scrapping
+  - Prédiction de victoires à partir de données tabulaires en utilisant des modèles de Machine Learning et du feature engineering
+  - Comparaison de ces modèles à des réseaux de neurones 
+Partie 2 :
+  - Reconnaissance et détection d'images à l'aide d'un FCN, de Data Augmentation et de bibliothèques Pythons comme OpenCV
+  - Création d'un système de recommandation de champions pour les joueurs en recréant des modèles avec des données manquantes
+  - Création d'une application utilisable pour pour effectuer des recommandations en temps réel au début d'une partie
+
+Pour la première partie du projet, les features utilisées sont listées ci-dessous (dupliquées pour chacun des 10 participants de la partie de League of Legendes) :
 
 | Features | signification                                                            | Source         | Type   |
 |----------|--------------------------------------------------------------------------|----------------|:--------:|
@@ -24,7 +36,5 @@ L'objectif était premièrement de prédire l'équipe gagnante d'une partie à p
 | WCH      | Victoires de la saison sur le champion de la partie                      | scraping u.gg | int    |
 | LCH      | Défaites de la saison sur le champion de la partie                       | scraping u.gg | int    |
 | TOTCH    | Total de parties jouées dans la saison sur le champion de la partie      | scraping u.gg | int    |
-
-De plus au cours de ce projet ont été réalisés de le reconnaissance d'images à l'aide de FCN et de Data Augmentation ainsi que la création d'une application fonctionnelle de recommandation de champions en temps réel (utilisable lors du moment de sélection des champions avant une partie).
 
 Le rapport et la présentation finale pour la soutenance sont disponibles dans ce projet, ainsi que l'application pour laquelle il faut lancer le programme chrec.py
