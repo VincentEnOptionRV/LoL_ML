@@ -6,16 +6,16 @@ L'objectif final de ce projet est la création d'un outil de recommandation de c
 Les réalisations sont les suivantes : 
 
 Partie 1 :
-  - Création d'un dataset à partir de récolte de données par API et par web-scrapping
+  - Création de datasets à partir de récolte de données à l'aide d'une API et par web-scrapping
   - Prédiction de victoires à partir de données tabulaires en utilisant des modèles de Machine Learning et du feature engineering
   - Comparaison de ces modèles à des réseaux de neurones 
   - 
 Partie 2 :
-  - Reconnaissance et détection d'images à l'aide d'un FCN, de Data Augmentation et de bibliothèques Pythons comme OpenCV
+  - Reconnaissance et détection d'images à l'aide d'un FCN, de Data Augmentation et de bibliothèques Python comme OpenCV
   - Création d'un système de recommandation de champions pour les joueurs en recréant des modèles avec des données manquantes
-  - Création d'une application utilisable pour pour effectuer des recommandations en temps réel au début d'une partie
+  - Création d'une application utilisable pour effectuer des recommandations en temps réel au début d'une partie
 
-Pour la première partie du projet, les features utilisées sont listées ci-dessous (dupliquées pour chacun des 10 participants de la partie de League of Legendes) :
+Pour la première partie du projet, les features utilisées sont listées ci-dessous (dupliquées pour chacun des 10 participants de la partie de League of Legends) :
 
 | Features | signification                                                            | Source         | Type   |
 |----------|--------------------------------------------------------------------------|----------------|:--------:|
