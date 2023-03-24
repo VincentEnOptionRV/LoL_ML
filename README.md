@@ -1,7 +1,7 @@
 # LoL_ML
-Ici seront déposés nos codes et nos recherches pour le projet Gaming de l'option IA de Centrale Nantes de 2022.
+Ici sont déposés nos codes et nos recherches pour le projet Gaming de l'option IA de Centrale Nantes de 2022-2023.
 
-L'objectif est de prédire l'équipe gagnante d'une partie à partir de plusieurs features listées ci-dessous (dupliquées pour chacun des 10 participants de la partie):
+L'objectif était premièrement de prédire l'équipe gagnante d'une partie à partir de plusieurs features listées ci-dessous (dupliquées pour chacun des 10 participants de la partie) :
 
 | Features | signification                                                            | Source         | Type   |
 |----------|--------------------------------------------------------------------------|----------------|:--------:|
