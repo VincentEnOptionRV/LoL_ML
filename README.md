@@ -4,10 +4,12 @@ Ici sont déposés nos codes et nos recherches pour le projet Gaming de l'option
 L'objectif final de ce projet est la création d'un outil de recommandation de champions sur League of Legends utilisable au début des parties par un joueur.
 
 Les réalisations sont les suivantes : 
+
 Partie 1 :
   - Création d'un dataset à partir de récolte de données par API et par web-scrapping
   - Prédiction de victoires à partir de données tabulaires en utilisant des modèles de Machine Learning et du feature engineering
   - Comparaison de ces modèles à des réseaux de neurones 
+  - 
 Partie 2 :
   - Reconnaissance et détection d'images à l'aide d'un FCN, de Data Augmentation et de bibliothèques Pythons comme OpenCV
   - Création d'un système de recommandation de champions pour les joueurs en recréant des modèles avec des données manquantes
