@@ -25,6 +25,6 @@ L'objectif est de prédire l'équipe gagnante d'une partie à partir de plusieur
 | LCH      | Défaites de la saison sur le champion de la partie                       | scraping u.gg | int    |
 | TOTCH    | Total de parties jouées dans la saison sur le champion de la partie      | scraping u.gg | int    |
 
-De plus au cours de ce projet ont été réalisés de le reconnaissance d'images à l'aide de FCN et de Data Augmentation ainsi que la création d'une application fonctionnelle de recommandation de champions en temps réelles (utilisable lors du moment de sélection des champions avant une partie).
+De plus au cours de ce projet ont été réalisés de le reconnaissance d'images à l'aide de FCN et de Data Augmentation ainsi que la création d'une application fonctionnelle de recommandation de champions en temps réel (utilisable lors du moment de sélection des champions avant une partie).
 
 Le rapport et la présentation finale pour la soutenance sont disponibles dans ce projet, ainsi que l'application pour laquelle il faut lancer le programme chrec.py
